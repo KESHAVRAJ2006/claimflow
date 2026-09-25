@@ -1,8 +1,7 @@
 """Upload the API to a Hugging Face Space: free Docker hosting with 2 vCPU and 16 GB RAM.
 
-The API needs about 600 MB before it serves a single request (torch and the embedding model), more than the free
-tiers of most hosts allow (Render's free instance has 512 MB). A Docker Space on Hugging Face's free CPU hardware
-runs the same production image with room to spare.
+The alternative to Render's free plan (render.yaml) for the API. Both run the same production image, which fits in
+512 MB; a Space has twenty times the CPU of a free Render instance, so it starts and embeds much faster.
 
 Run on your own machine, from the repository root, once you have logged in with `hf auth login`:
 

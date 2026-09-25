@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     environment: Literal["development", "test", "production"] = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    # A demo deployment's opt-in to the synthetic data set: scripts/serve.py seeds on start when it is true.
+    # Production refuses to seed without it, and refuses --reset even with it.
+    seed_demo_data: bool = False
 
     # SecretStr keeps the embedded password out of repr(), logs and tracebacks.
     database_url: SecretStr

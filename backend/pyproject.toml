@@ -18,8 +18,11 @@ dependencies = [
     "alembic>=1.14,<2.0",
     "qdrant-client>=1.13,<1.14",
     "pypdf>=6.1,<7.0",
-    # In Docker, torch is installed first from the CPU-only index; PyPI's Linux wheel bundles unused CUDA (~2 GB).
-    "sentence-transformers>=6.0,<7.0",
+    # Embeddings in production: all-MiniLM-L6-v2's ONNX export, without torch (see app/retrieval/embeddings.py).
+    "onnxruntime>=1.20,<2.0",
+    "tokenizers>=0.20,<1.0",
+    "huggingface-hub>=1.0,<2.0",
+    "numpy>=2.0,<3.0",
     "langchain-core>=1.6,<2.0",
     "langchain-text-splitters>=1.1,<2.0",
     # Phase 6: the agent graph, its checkpointer, and the two LLM providers (Groq primary, Gemini fallback).
@@ -36,6 +39,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    # The reference embedder (same model, same vectors) for development, tests and evaluation. It needs torch,
+    # which pulls ~400 MB into memory, so the production image leaves it out. In Docker, torch comes from the
+    # CPU-only index first; PyPI's Linux wheel bundles unused CUDA libraries (~2 GB).
+    "sentence-transformers>=6.0,<7.0",
     "pytest>=8.3,<9.0",
     "pytest-asyncio>=0.24,<1.0",
     "ruff>=0.8",

@@ -42,6 +42,7 @@ from app.domain.enums import (
 )
 from app.domain.products import INCIDENT_TYPES_BY_PRODUCT, POLICY_DOCUMENTS
 
+DEFAULT_SEED = 42
 NUM_CUSTOMERS = 50
 NUM_POLICIES = 80
 NUM_CLAIMS = 200
@@ -703,6 +704,29 @@ class DatabaseState:
     used_since_seed: bool  # anything written after the seed finished (claim runs, decisions, new claims)
 
 
+def production_refusal(is_production: bool, seed_demo_data: bool, reset: bool) -> str | None:
+    """Say why seeding must not run in this environment, if it must not.
+
+    A production database is left alone unless the deployment opted into demo data (SEED_DEMO_DATA=true). Even
+    then --reset is refused: an opted-in demo only gets decide_seed_action's choices, which never delete app data.
+
+    Args:
+        is_production: Whether ENVIRONMENT=production.
+        seed_demo_data: Whether SEED_DEMO_DATA=true.
+        reset: Whether --reset was passed.
+
+    Returns:
+        The refusal message, or None when seeding may run.
+    """
+    if not is_production:
+        return None
+    if reset:
+        return "seed: refusing --reset with ENVIRONMENT=production."
+    if not seed_demo_data:
+        return "seed: refusing to run with ENVIRONMENT=production unless SEED_DEMO_DATA=true (a demo deployment)."
+    return None
+
+
 def decide_seed_action(state: DatabaseState, today: date, reset: bool) -> SeedAction:
     """Choose what seeding should do. Only an explicit --reset may delete data the app has written.
 
@@ -803,8 +827,9 @@ async def run(reset: bool, seed: int) -> int:
         Process exit code.
     """
     settings = get_settings()
-    if settings.is_production:
-        print("seed: refusing to run with ENVIRONMENT=production.", file=sys.stderr)
+    refusal = production_refusal(settings.is_production, settings.seed_demo_data, reset)
+    if refusal is not None:
+        print(refusal, file=sys.stderr)
         return 1
 
     now = datetime.now(UTC)
@@ -849,7 +874,7 @@ def main() -> None:
     """Parse CLI arguments and run the seed."""
     parser = argparse.ArgumentParser(description="Seed ClaimFlow with deterministic demo data.")
     parser.add_argument("--reset", action="store_true", help="wipe all tables before seeding, even app-written data")
-    parser.add_argument("--seed", type=int, default=42, help="random seed (default: 42)")
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help=f"random seed (default: {DEFAULT_SEED})")
     args = parser.parse_args()
     sys.exit(asyncio.run(run(reset=args.reset, seed=args.seed)))
 

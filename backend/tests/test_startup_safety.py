@@ -16,7 +16,7 @@ import app.db.models  # noqa: F401 — registers tables
 from app.core.config import get_settings
 from app.db.base import Base
 from scripts.migrate import MigrationAction, SchemaState, choose_action, inspect_schema
-from scripts.seed import DatabaseState, SeedAction, decide_seed_action
+from scripts.seed import DatabaseState, SeedAction, decide_seed_action, production_refusal
 
 TODAY = date(2026, 9, 15)
 YESTERDAY = date(2026, 9, 14)
@@ -57,6 +57,22 @@ def test_choose_action(state: SchemaState, expected: MigrationAction) -> None:
 )
 def test_decide_seed_action(state: DatabaseState, reset: bool, expected: SeedAction) -> None:
     assert decide_seed_action(state, today=TODAY, reset=reset) is expected
+
+
+@pytest.mark.parametrize(
+    ("is_production", "seed_demo_data", "reset", "allowed"),
+    [
+        (False, False, False, True),
+        (False, False, True, True),  # development may always reset
+        (True, False, False, False),  # a real production database is never seeded
+        (True, True, False, True),  # a demo deployment opted in
+        (True, True, True, False),  # ... but never wipes data, even then
+    ],
+)
+def test_production_seeding_needs_the_demo_opt_in(
+    is_production: bool, seed_demo_data: bool, reset: bool, allowed: bool
+) -> None:
+    assert (production_refusal(is_production, seed_demo_data, reset) is None) is allowed
 
 
 # ---- schema inspection against real temporary databases -------------------------------------------

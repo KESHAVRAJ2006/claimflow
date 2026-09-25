@@ -148,8 +148,10 @@ Discord webhook URL ending in `/slack`. To turn it on:
 - set `N8N_WEBHOOK_URL`, `WEBHOOK_SECRET` and `NOTIFY_WEBHOOK_URL` in `.env`;
 - add `COMPOSE_PROFILES=notifications`, so `docker compose up -d` starts n8n too.
 
-Deployment has a **free** route (API on a Hugging Face Docker Space, console on Render's free tier, Neon Postgres, Qdrant Cloud) and a paid one (`render.yaml` deploys the API, the console behind HTTP Basic auth, and Postgres to Render). Both are described in
-[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), along with every environment variable.
+Deployment is **free**: `render.yaml` deploys the API and the console (behind HTTP Basic auth) to Render's free
+plan, with Neon Postgres and a Qdrant Cloud cluster, both free. The API fits a 512 MB instance because production
+runs the embedding model as ONNX, without torch. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) walks through it and
+lists every environment variable.
 
 ### What happens on every backend start
 
@@ -176,7 +178,7 @@ docker compose exec backend python -m scripts.seed --reset          # reload see
 |---|---|
 | API | FastAPI, Pydantic v2, SQLAlchemy 2 (async), Alembic, Postgres 16 |
 | Agents | LangGraph. Groq (`openai/gpt-oss-120b`) first, Gemini 2.5 Flash as the fallback, both at temperature 0 |
-| Retrieval | sentence-transformers (`all-MiniLM-L6-v2`), Qdrant |
+| Retrieval | `all-MiniLM-L6-v2`: sentence-transformers in development, its ONNX export (onnxruntime) in production. Qdrant |
 | Tools over MCP | FastMCP (stdio for Claude Desktop, HTTP with a bearer token) |
 | Console | Next.js 14, TypeScript, Tailwind, shadcn/ui, TanStack Query, Recharts, framer-motion |
 | Operations | Docker (multi-stage, non-root), n8n, Render, pytest, ruff |

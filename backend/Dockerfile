@@ -1,11 +1,16 @@
 # ClaimFlow API image, multi-stage.
 #
 #   requirements  the dependency lists, extracted from pyproject.toml
-#   base          Python + CPU-only torch in a virtualenv owned by the app user
-#   deps          + the runtime dependencies, + the embedding model baked in
-#   dev           + dev tools (pytest, ruff), the project installed editable, tests. docker-compose builds this.
-#   runtime       a clean python:3.11-slim with only the venv, the model and the application code. The LAST stage,
+#   base          Python and a virtualenv owned by the app user
+#   deps          + the runtime dependencies, + the embedding model's ONNX export baked in (no torch)
+#   torch         base + CPU-only torch, for the development image only
+#   dev           torch + runtime and dev dependencies (sentence-transformers, pytest, ruff), the project installed
+#                 editable, tests. docker-compose builds this.
+#   runtime       a clean python:3.11-slim with only deps' venv, the model and the application code. The LAST stage,
 #                 so a plain `docker build` (Render builds without --target) produces the production image.
+#
+# Production leaves torch out: importing sentence-transformers alone takes ~400 MB, and the whole API must fit a
+# 512 MB free instance. It runs the same model as ONNX instead (app/retrieval/embeddings.py): same vectors.
 
 # Why a stage just for this: layers are cached by the files they copy. Copying pyproject.toml itself into the slow
 # install layer meant that editing a TOOL setting there ([tool.ruff], [tool.pytest]) reinstalled every dependency
@@ -41,28 +46,41 @@ ENV VIRTUAL_ENV=/opt/venv \
     HF_HOME=/opt/hf-cache
 WORKDIR /app
 
-# CPU-only torch first. The default PyPI wheel for Linux bundles ~2 GB of CUDA libraries this app never uses;
-# once this torch is installed, sentence-transformers accepts it and pip does not replace it.
-ARG TORCH_VERSION=2.14.0
-RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch==${TORCH_VERSION}"
-
 
 FROM base AS deps
 
 # Only [project].dependencies: the application itself is not installed as a package in production, and the dev
-# extras (pytest, ruff) stay out.
+# extras (sentence-transformers, pytest, ruff) stay out.
 COPY --from=requirements /src/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
-# Bake the embedding model into the image: startup needs no network and never waits for a download.
+# Bake the model's ONNX export into the image: startup needs no network and never waits for a download. The file
+# list is ONNX_MODEL_FILES in app/retrieval/embeddings.py.
 ARG EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')"
+RUN python -c "from huggingface_hub import hf_hub_download; \
+[hf_hub_download('${EMBEDDING_MODEL}', name) for name in \
+('onnx/model.onnx', 'tokenizer.json', 'sentence_bert_config.json', '1_Pooling/config.json')]"
 
 
-FROM deps AS dev
+FROM base AS torch
 
+# CPU-only torch first. The default PyPI wheel for Linux bundles ~2 GB of CUDA libraries this app never uses;
+# once this torch is installed, sentence-transformers accepts it and pip does not replace it. Its own stage, so
+# changing a dependency never re-downloads it.
+ARG TORCH_VERSION=2.14.0
+RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch==${TORCH_VERSION}"
+
+
+FROM torch AS dev
+
+COPY --from=requirements /src/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 COPY --from=requirements /src/requirements-dev.txt /tmp/requirements-dev.txt
 RUN pip install -r /tmp/requirements-dev.txt
+# Both embedders work offline: the ONNX files from deps, plus the full model for sentence-transformers.
+COPY --from=deps --chown=claimflow /opt/hf-cache /opt/hf-cache
+ARG EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')"
 # Register the project as an editable install, against an empty package so editing application code never
 # invalidates it. --no-deps: everything it needs is installed above, so this takes seconds even after
 # pyproject.toml changes.
@@ -80,7 +98,7 @@ COPY --chown=claimflow scripts ./scripts
 COPY --chown=claimflow data ./data
 COPY --chown=claimflow tests ./tests
 # Strip Windows line endings in case the scripts were checked out with CRLF.
-RUN sed -i 's/\r$//' docker-entrypoint.sh scripts/start.sh
+RUN sed -i 's/\r$//' docker-entrypoint.sh
 
 EXPOSE 8000
 # Invoked through `sh` so the script needs no executable bit (Windows checkouts often lose it).
@@ -117,7 +135,9 @@ COPY alembic.ini ./
 COPY migrations ./migrations
 COPY scripts ./scripts
 COPY data ./data
-RUN sed -i 's/\r$//' scripts/start.sh
+# Compiled now, because the app user cannot write __pycache__ here: otherwise every start (on a free host, every
+# wake from sleep) would compile the application from source again, on a tenth of a CPU.
+RUN python -m compileall -q app scripts migrations
 USER claimflow
 
 EXPOSE 8000
@@ -125,4 +145,5 @@ EXPOSE 8000
 # the slim image has no curl, and adding it only for this would grow the attack surface.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
     CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.environ[\"PORT\"]}/api/health', timeout=4)"
-CMD ["sh", "/app/scripts/start.sh"]
+# One process for the whole start sequence: see scripts/serve.py.
+CMD ["python", "-m", "scripts.serve"]

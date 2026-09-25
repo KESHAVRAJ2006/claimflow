@@ -1,21 +1,14 @@
-# Render Blueprint for ClaimFlow: the API, the reviewer console and Postgres 16.
+# Render Blueprint for ClaimFlow on Render's FREE plan: the API and the reviewer console, 512 MB each.
 # Deploy: Render dashboard -> New -> Blueprint -> this repository. Full walkthrough: docs/DEPLOYMENT.md.
 #
-# Not created here, because Render does not host them:
-#   - Qdrant: use a Qdrant Cloud free cluster (QDRANT_URL / QDRANT_API_KEY below).
-#   - n8n:    n8n Cloud or any n8n you run; import n8n/claimflow-notifications.json (N8N_WEBHOOK_URL below).
+# Not created here:
+#   - Postgres: a Neon free project (DATABASE_URL below). Render's free Postgres is deleted after 30 days.
+#   - Qdrant:   a Qdrant Cloud free cluster (QDRANT_URL / QDRANT_API_KEY below).
+#   - n8n:      n8n Cloud or any n8n you run; import n8n/claimflow-notifications.json (N8N_WEBHOOK_URL below).
 # Values marked `sync: false` are asked for once, when the Blueprint is first applied.
-
-databases:
-  - name: claimflow-db
-    databaseName: claimflow
-    user: claimflow
-    # 256 MB RAM, enough for the demo data set. "free" also works but Render deletes free databases after 30 days.
-    plan: 0.1c-256mb
-    postgresMajorVersion: "16"
-    region: singapore
-    # No IPs allowed: only services inside this Render account reach the database, over the private network.
-    ipAllowList: []
+#
+# Free instances sleep after 15 minutes without traffic; the first request after that waits for them to start.
+# For always-on hosting, change both `plan: free` to `starter` or larger.
 
 services:
   - type: web
@@ -24,20 +17,18 @@ services:
     # Builds the Dockerfile's last stage (runtime): no dev tools, no tests, non-root, model baked in.
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    # 2 GB: the embedding model, torch and LangGraph need ~500 MB at rest and more during a triage run.
-    # 512 MB instances run out of memory.
-    plan: 1c-2g
+    # Measured under a 512 MB limit: ~345 MB after startup, ~375 MB at most (two triage runs at once, a 10 MB
+    # upload). It fits because production runs the embedding model as ONNX, without torch.
+    plan: free
     region: singapore
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
-      # Render gives postgres://...; Settings rewrites it for asyncpg.
+      # The Neon connection string, pasted as it is (connection pooling off; see docs/DEPLOYMENT.md).
       - key: DATABASE_URL
-        fromDatabase:
-          name: claimflow-db
-          property: connectionString
+        sync: false
       # The agents' SELECT-only login. render.yaml cannot build a URL from parts, so Settings derives
-      # TOOLS_DATABASE_URL from DATABASE_URL and these two; scripts/start.sh creates the login on every deploy.
+      # TOOLS_DATABASE_URL from DATABASE_URL and these two; scripts/serve.py creates the login on every start.
       - key: AGENT_DB_USER
         value: claimflow_agent
       - key: AGENT_DB_PASSWORD
@@ -75,19 +66,17 @@ services:
     runtime: docker
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
-    # A paid instance so it can reach the API over Render's private network (BACKEND_URL below).
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
     # Exempt from the Basic auth; answers without calling the API.
     healthCheckPath: /healthz
     autoDeployTrigger: commit
     envVars:
-      # host:port on the private network; the proxy adds http://. The API is never called from a browser.
+      # The API's public URL, shown at the top of claimflow-api's page: https://claimflow-api.onrender.com, or
+      # with a suffix if that name was taken. Free services cannot receive private network traffic, so the
+      # console calls the API over HTTPS. It is never called from a browser.
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: claimflow-api
-          property: hostport
+        sync: false
       - key: API_KEY
         fromService:
           type: web

@@ -1,57 +1,136 @@
 # Deploying ClaimFlow
 
-There are two ways to deploy ClaimFlow:
-- **[Free deployment](#free-deployment)** costs nothing. The services sleep when idle.
-- **[Render Blueprint](#paid-deployment-render-blueprint)** is paid and always on. Everything except Qdrant runs
-  on Render.
+ClaimFlow deploys for free:
+- **[Render free plan](#free-deployment-on-render)** runs the API and the console from `render.yaml`, with Neon
+  Postgres and a Qdrant Cloud cluster, both free.
+- **[Hugging Face Space](#alternative-the-api-on-a-hugging-face-space)** can run the API instead. It has far more
+  CPU, so it starts faster.
 
 For local development, `docker compose up -d` is all you need (see the README).
 
 > ClaimFlow's recommendations are AI-assisted and require human review. A deployment is a demonstration system
 > with synthetic data; do not load real customer data into it.
 
-## Free deployment
-
-The API needs about 600 MB of memory before it serves a request: torch plus the embedding model, measured on the
-production image. Render's free instances have 512 MB, so the free route runs the API on Hugging Face, which gives
-free Docker Spaces 16 GB.
+## Free deployment on Render
 
 ```
-Browser ──HTTPS + Basic auth──▶ Render free web service (console)
+Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Render free web service, 512 MB
                                    │  adds X-API-Key server-side
-                                   ▼  HTTPS
-                                Hugging Face Space (API, Docker, 2 vCPU / 16 GB)
+                                   ▼  HTTPS (BACKEND_URL)
+                                claimflow-api (FastAPI + agents)  Render free web service, 512 MB, 0.1 CPU
                                    ├──▶ Neon free Postgres
-                                   ├──▶ Qdrant Cloud free cluster
-                                   └──▶ Groq / Gemini
+                                   ├──▶ Qdrant Cloud free cluster (policy vectors)
+                                   ├──▶ Groq / Gemini (LLMs)
+                                   └──▶ n8n (notifications, optional)
 ```
 
-Put Neon and Qdrant in **US East (N. Virginia)**, next to Hugging Face's servers. Each triage makes dozens of
-database and search calls, so the distance adds up.
+- **Browsers talk only to the console.** The API key never reaches a browser, and the API has no CORS origins.
+- **The console calls the API over HTTPS.** Free services cannot receive private network traffic.
+- **The API runs as one process on purpose.** The triage runner and the live-trace event stream live in memory,
+  so a second worker would not see the first one's runs.
 
-Free services sleep when idle:
-- The console wakes 30–60 s after 15 minutes idle.
-- The API needs a minute or two after 48 hours idle.
-- Neon wakes in about a second.
+### Memory and start-up time
 
-Open the site a minute before a demo.
+The API fits a free instance because production runs the embedding model's ONNX export with onnxruntime, without
+torch (torch alone took about 400 MB). Measured on the production image, limited to 512 MB and 0.1 CPU:
+
+| | Memory | Time to answer |
+|---|---|---|
+| After start-up | ~345 MB | about 3 minutes on the first deploy, which embeds the three policy PDFs once |
+| Waking after 15 idle minutes | ~345 MB | about 70 seconds, plus the time Render takes to start the instance |
+| Two triage runs at once, or a 10 MB upload | ~375 MB at most | |
+
+All of start-up runs in one Python process (`scripts/serve.py`), so the application is imported and the model
+loaded once. On a tenth of a CPU, each extra process cost 15–20 seconds.
+
+Free instances sleep after 15 minutes without traffic. **Open the console a few minutes before a demo**, then run
+one triage to wake Neon and Qdrant too.
+
+### Before you start
+
+1. **Accounts:** GitHub with this repository pushed to it, and Render (sign in with GitHub).
+2. **LLM keys:** at least one. With both, Gemini takes over when Groq fails. Free keys have daily limits (see
+   the README's Limitations).
+   - Groq: https://console.groq.com/keys
+   - Google AI Studio: https://aistudio.google.com/apikey
 
 ### 1. Database: Neon
 
-1. At https://neon.tech, create a project: Postgres 16, region **AWS US East (N. Virginia)**.
+1. At https://neon.tech, create a project: Postgres 16, region **AWS Asia Pacific 1 (Singapore)**, next to the
+   Render services. Each triage makes dozens of database calls, so distance adds up.
 2. Under **Connect**, turn **Connection pooling off**. ClaimFlow creates its own read-only login and uses prepared
    statements, and both need a direct connection.
 3. Copy the connection string. Paste it as it is; the API adapts `sslmode` and `channel_binding` for its driver.
 
 ### 2. Vectors: Qdrant Cloud
 
-Create a free cluster in **N. Virginia**. Copy its URL (add `:6333` if it is missing) and create an API key.
+1. At https://cloud.qdrant.io, create a free cluster, in the region nearest Singapore offered.
+2. Copy its URL (`https://….cloud.qdrant.io`; add `:6333` if it is missing) and create an API key.
 
-### 3. API: Hugging Face Space
+### 3. Deploy the Blueprint
 
-1. Create a free account at https://huggingface.co.
-2. Create a token with **Write** access at https://huggingface.co/settings/tokens.
-3. On your machine, from the repository root:
+1. In Render, choose **New → Blueprint**, select the repository, and confirm `render.yaml`.
+2. Render asks for the values marked `sync: false`:
+
+   | Variable | Value |
+   |----------|-------|
+   | `DATABASE_URL` | The Neon connection string |
+   | `QDRANT_URL` / `QDRANT_API_KEY` | From Qdrant Cloud |
+   | `GROQ_API_KEY` / `GOOGLE_API_KEY` | At least one; leave the other blank |
+   | `N8N_WEBHOOK_URL` | Leave blank for now; see [Notifications](#notifications-n8n) |
+   | `BACKEND_URL` (claimflow-web) | `https://claimflow-api.onrender.com`. If Render gives the API another URL (the name was taken), correct it afterwards under **claimflow-web → Environment**. |
+
+3. Apply. Render builds both images and starts them. The first API build takes about 5 minutes.
+4. Watch the **claimflow-api** logs. A healthy first start shows, in order:
+   1. `migrate: schema is at the latest migration.`
+   2. `provision_readonly_role: 'claimflow_agent' can SELECT from customers, policies, premium_payments, claims and write nothing.`
+   3. `Seeded 50 customers, 80 policies, …`, then three `ingest: …: ingested` lines.
+   4. `startup complete`, with `"triage_enabled": true`.
+5. Check that the API's URL (top of its page) matches the console's `BACKEND_URL`.
+6. Find the console password: **claimflow-web → Environment → `CONSOLE_PASSWORD`**.
+7. Open the claimflow-web URL and sign in as `reviewer` with that password. Then:
+   1. Open **Claims**.
+   2. Pick a *Submitted* claim.
+   3. Click **Run triage**.
+
+For always-on hosting without the wait, change both `plan: free` in `render.yaml` to `starter` or larger.
+
+#### What `render.yaml` sets up for you
+
+- **The agents' read-only login** is built from three values: `AGENT_DB_USER`, `AGENT_DB_PASSWORD` (generated),
+  and `DATABASE_URL`. From these the API derives `TOOLS_DATABASE_URL`, because `render.yaml` cannot join
+  strings. `scripts/serve.py` creates the login on every start, with SELECT on four tables and nothing else. The
+  API then checks at startup that the login really is read-only.
+- **Generated secrets:**
+  - `API_KEY` is generated and shared with the console via `fromService`.
+  - `WEBHOOK_SECRET` is generated too.
+  - The API refuses to start in production with an `API_KEY` shorter than 32 characters; generated values are 44.
+- **`CONSOLE_PASSWORD`** is generated, which turns on HTTP Basic auth for the whole console. `/healthz` is exempt
+  so Render's health check works.
+- **`SEED_DEMO_DATA=true`** loads the synthetic data set. Production refuses to seed without it, and never wipes
+  data the app has written.
+
+#### If the database user may not create roles
+
+Neon's project owner can create roles, so the step above works there. On a provider where it cannot:
+
+1. The deploy still succeeds. The log shows `read-only role provisioning failed` with the reason, and the
+   agents stay disabled. They fail closed and never fall back to the owner login.
+2. To fix it:
+   1. Create the login yourself as an admin user.
+   2. Grant it `SELECT` on `customers, policies, premium_payments, claims` only.
+   3. Set `TOOLS_DATABASE_URL` to that login.
+3. The privilege check at startup refuses the login if it can do anything more.
+
+## Alternative: the API on a Hugging Face Space
+
+A free Docker Space has 2 vCPU and 16 GB, so the API starts in seconds instead of minutes. It sleeps after 48
+hours without traffic. Use the same Neon and Qdrant setup, ideally in **US East (N. Virginia)**, next to Hugging
+Face's servers.
+
+1. Create a free account at https://huggingface.co, and a token with **Write** access at
+   https://huggingface.co/settings/tokens.
+2. On your machine, from the repository root:
 
    ```bash
    pip install --upgrade huggingface_hub
@@ -61,7 +140,7 @@ Create a free cluster in **N. Virginia**. Copy its URL (add `:6333` if it is mis
 
    The script creates the Space if needed. It uploads what git has committed under `backend/`, so commit first.
    It prints the Space's URL.
-4. In the Space, open **Settings → Variables and secrets** and add these secrets. Generate each random value with
+3. In the Space, open **Settings → Variables and secrets** and add these secrets. Generate each random value with
    `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
 
    | Secret | Value |
@@ -76,113 +155,13 @@ Create a free cluster in **N. Virginia**. Copy its URL (add `:6333` if it is mis
    | `SEED_DEMO_DATA` | `true` |
    | `MAX_CONCURRENT_RUNS` | `2` |
 
-5. The Space restarts with the secrets. Its **Logs** tab shows the same startup sequence described for Render
-   [below](#deploy-on-render), ending in `startup complete`. Check `https://<space-url>/api/health`.
+4. The Space restarts with the secrets. Its **Logs** tab shows the start-up sequence above, ending in
+   `startup complete`. Check `https://<space-url>/api/health`.
+5. Run the console on Render as above, with `BACKEND_URL` set to the Space URL (for example
+   `https://username-claimflow-api.hf.space`) and `API_KEY` to the Space's value; or delete claimflow-api from
+   `render.yaml` first.
 
 To deploy a new version, commit and run the script again.
-
-### 4. Console: Render free web service
-
-1. In Render, choose **New → Web Service** and pick the GitHub repository.
-2. Set **Language** to Docker, **Root Directory** to `frontend`, **Instance type** to Free, and **Region** to
-   Virginia.
-3. Under **Advanced**, set the **Health check path** to `/healthz`.
-4. Add these environment variables:
-
-   | Variable | Value |
-   |---|---|
-   | `BACKEND_URL` | the Space URL, e.g. `https://username-claimflow-api.hf.space` |
-   | `API_KEY` | the same value as the Space's `API_KEY` |
-   | `CONSOLE_USER` | `reviewer` |
-   | `CONSOLE_PASSWORD` | a random value; this is what you sign in with |
-
-5. Deploy, open the `.onrender.com` URL, and sign in.
-
-## Paid deployment: Render Blueprint
-
-Always-on hosting, with everything except Qdrant on Render. The notification, environment and troubleshooting sections after it apply to both routes.
-
-### What runs where
-
-```
-Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Render web service, 0.5c-512mb
-                                   │  adds X-API-Key server-side
-                                   ▼  private network, host:port
-                                claimflow-api (FastAPI + agents)  Render web service, 1c-2g
-                                   ├──▶ claimflow-db (Postgres 16)   Render Postgres, private only
-                                   ├──▶ Qdrant Cloud (policy vectors) HTTPS + API key
-                                   ├──▶ Groq / Gemini (LLMs)         HTTPS
-                                   └──▶ n8n (notifications)          HTTPS, HMAC-signed
-```
-
-- **Browsers talk only to the console.** The API key never reaches a browser, and the API has no CORS origins.
-- **The API runs as one process on purpose.** The triage runner and the live-trace event stream live in memory,
-  so a second worker would not see the first one's runs. To handle more load, give it a bigger instance rather
-  than more instances.
-- **The database accepts no outside connections** (`ipAllowList: []`).
-
-### Before you start
-
-1. **Accounts:** a GitHub account with this repository pushed to it, and a Render account.
-2. **Qdrant Cloud:**
-   1. Create a free cluster at https://cloud.qdrant.io, in a region near Singapore if you can.
-   2. Copy the cluster URL (`https://….cloud.qdrant.io:6333`).
-   3. Create an API key.
-3. **LLM keys:** at least one of these. With both, Gemini takes over when Groq fails.
-   - Groq: https://console.groq.com/keys
-   - Google AI Studio: https://aistudio.google.com/apikey
-
-### Deploy on Render
-
-1. In Render, choose **New → Blueprint**, select the repository, and confirm `render.yaml`.
-2. Render asks for the values marked `sync: false`:
-
-   | Variable | Value |
-   |----------|-------|
-   | `QDRANT_URL` | Your Qdrant Cloud cluster URL |
-   | `QDRANT_API_KEY` | Your Qdrant Cloud API key |
-   | `GROQ_API_KEY` | Groq key (or leave blank if you give a Google key) |
-   | `GOOGLE_API_KEY` | Google AI Studio key (or leave blank if you give a Groq key) |
-   | `N8N_WEBHOOK_URL` | Leave blank for now; see [Notifications](#notifications-n8n) |
-
-3. Apply. Render creates the database, builds both images and starts them. The first API build takes about 10
-   minutes, mostly for torch and the embedding model.
-4. Watch the **claimflow-api** logs. A healthy first start shows, in order:
-   1. The migration runs.
-   2. `provision_readonly_role: 'claimflow_agent' can SELECT from customers, policies, premium_payments, claims and write nothing.`
-   3. The seed data is loaded, and the three policy PDFs are ingested into Qdrant.
-   4. `startup complete`, with `"triage_enabled": true`.
-5. Find the console password: **claimflow-web → Environment → `CONSOLE_PASSWORD`**.
-6. Open the claimflow-web URL and sign in as `reviewer` with that password. Then:
-   1. Open **Claims**.
-   2. Pick a *Submitted* claim.
-   3. Click **Run triage**.
-
-#### What `render.yaml` sets up for you
-
-- **`DATABASE_URL`** comes from the database as `postgres://…`. The API rewrites it for the asyncpg driver.
-- **The agents' read-only login** is built from three values: `AGENT_DB_USER`, `AGENT_DB_PASSWORD` (generated),
-  and `DATABASE_URL`. From these the API derives `TOOLS_DATABASE_URL`, because `render.yaml` cannot join
-  strings. `scripts/start.sh` creates the login on every deploy, with SELECT on four tables and nothing else. The
-  API then checks at startup that the login really is read-only.
-- **Generated secrets:**
-  - `API_KEY` is generated and shared with the console via `fromService`.
-  - `WEBHOOK_SECRET` is generated too.
-  - The API refuses to start in production with an `API_KEY` shorter than 32 characters; generated values are 44.
-- **`CONSOLE_PASSWORD`** is generated, which turns on HTTP Basic auth for the whole console. `/healthz` is exempt
-  so Render's health check works.
-
-#### If the database user may not create roles
-
-Render's default database user can create roles, so the step above works there. On a provider where it cannot:
-
-1. The deploy still succeeds. The log shows `read-only role provisioning failed` with the reason, and the
-   agents stay disabled. They fail closed and never fall back to the owner login.
-2. To fix it:
-   1. Create the login yourself as an admin user.
-   2. Grant it `SELECT` on `customers, policies, premium_payments, claims` only.
-   3. Set `TOOLS_DATABASE_URL` to that login.
-3. The privilege check at startup refuses the login if it can do anything more.
 
 ## Notifications (n8n)
 
@@ -246,7 +225,7 @@ decision.
 | `MAX_UPLOAD_BYTES`, `MAX_PDF_PAGES` | no | `10485760`, `50` | Upload limits. |
 | `N8N_WEBHOOK_URL` | no | – | Where events are sent; unset means events are only logged. |
 | `WEBHOOK_SECRET` | with n8n | – | HMAC key for the `X-ClaimFlow-Signature` header. |
-| `SEED_DEMO_DATA` | no | `false` | Runtime image only: load the synthetic data set on start. |
+| `SEED_DEMO_DATA` | no | `false` | Runtime image only: load the synthetic data set on start. The only way to seed with `ENVIRONMENT=production`. |
 | `LOG_LEVEL` | no | `INFO` | JSON logs on stdout. |
 | `CHECKPOINT_PATH` | no | temp dir | LangGraph checkpoints (SQLite); losing them only affects runs in flight. |
 | `MCP_AUTH_TOKEN` | MCP over HTTP | – | Bearer token, 32+ characters (see SECURITY.md). |
@@ -276,28 +255,33 @@ decision.
 
 | Image | Base | Contents | Runs as |
 |-------|------|----------|---------|
-| `backend` (last stage, `runtime`) | `python:3.11-slim` | venv with runtime dependencies only (CPU torch), the embedding model, app code | uid 1000; the code is read-only to it |
-| `backend` (`--target dev`, used by compose) | same | + pytest, ruff, tests, editable install, dependency auto-sync | uid 1000 |
+| `backend` (last stage, `runtime`) | `python:3.11-slim` | venv with runtime dependencies only (onnxruntime, no torch), the embedding model's ONNX export, app code | uid 1000; the code is read-only to it |
+| `backend` (`--target dev`, used by compose) | same | + CPU torch, sentence-transformers, pytest, ruff, tests, editable install, dependency auto-sync | uid 1000 |
 | `frontend` | `node:20-alpine` | Next.js standalone server and static assets | `node` |
 
-Build them locally the same way Render does:
+Build them locally the same way Render does, and try the API under the free plan's limits:
 
 ```bash
 docker build -t claimflow-api ./backend
 docker build -t claimflow-web ./frontend
+docker run --memory 512m --cpus 0.1 --env-file <your production env> -p 8000:8000 claimflow-api
 ```
 
 ## Troubleshooting
 
-Start with `python -m scripts.doctor` (in the API container, or on Render with the service's shell): it checks
-every dependency and prints the fix. Common cases:
+Start with `python -m scripts.doctor` (in the API container; free Render services have no shell, so run it
+locally against the same `DATABASE_URL` and `QDRANT_URL`): it checks every dependency and prints the fix. Common
+cases:
 
 - **The API deploy fails its health check.** `/api/health` returns 503 until Postgres and Qdrant both answer.
   Check `QDRANT_URL`: it needs the `https://` scheme and the `:6333` port.
-- **The API restarts with "Out of memory".** The instance is too small. Use `1c-2g` or larger.
+- **The API restarts with "Out of memory".** It peaks around 375 MB with `MAX_CONCURRENT_RUNS=2`; raising that
+  adds memory per run. Lower it, or use a larger instance.
 - **"Run triage" answers 503 "triage unavailable".** No LLM key is set, or read-only provisioning failed. The
   API's startup log says which.
-- **The console shows "API unreachable".** `BACKEND_URL` is wrong, or the API is still deploying. Private
-  networking needs both services in the same region, on paid instances.
+- **A triage ends "escalated" with confidence 0.** Every LLM provider refused, usually a free key's daily quota.
+  The API's log shows `LLM provider out of daily quota`. The run fails safe to a human; try again later.
+- **The console shows "API unreachable".** `BACKEND_URL` must be the API's full `https://…onrender.com` URL. Right
+  after the console wakes, the API may still be starting; reload after a minute.
 - **Every n8n execution ends in "bad signature".** The API's `WEBHOOK_SECRET` and n8n's
   `CLAIMFLOW_WEBHOOK_SECRET` differ. Copy the value again and restart n8n.
