@@ -1,2 +1,10 @@
 # Shell scripts run inside Linux containers; Windows CRLF line endings would break them ("/bin/sh^M: not found").
 *.sh text eol=lf
+
+# Binary files are never line-ending converted. PDFs above all: their cross-reference table stores byte offsets,
+# so turning LF into CRLF (core.autocrlf on Windows) corrupts them.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
