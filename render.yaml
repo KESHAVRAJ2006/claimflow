@@ -60,6 +60,11 @@ services:
         value: "2"
       - key: LOG_LEVEL
         value: INFO
+      # 10 s, the maximum. Neon's free compute sleeps after 5 idle minutes; the first query after that reconnects,
+      # wakes it and does the TLS handshake on a tenth of a CPU, which the default 2 s cannot cover, so
+      # /api/health reported Postgres down although it worked.
+      - key: HEALTH_CHECK_TIMEOUT_S
+        value: "10"
 
   - type: web
     name: claimflow-web

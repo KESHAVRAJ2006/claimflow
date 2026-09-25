@@ -275,6 +275,9 @@ Start with `python -m scripts.doctor` (in the API container; free Render service
 locally against the same `DATABASE_URL` and `QDRANT_URL`): it checks every dependency and prints the fix. Common
 cases:
 
+- **`/api/health` says Postgres is down, "timed out", but the API works.** Neon's free database sleeps after 5
+  idle minutes, and waking it takes longer than the 2 s default. Set `HEALTH_CHECK_TIMEOUT_S=10` (render.yaml
+  does) and reload.
 - **The API deploy fails its health check.** `/api/health` returns 503 until Postgres and Qdrant both answer.
   Check `QDRANT_URL`: it needs the `https://` scheme and the `:6333` port.
 - **The API restarts with "Out of memory".** It peaks around 375 MB with `MAX_CONCURRENT_RUNS=2`; raising that
