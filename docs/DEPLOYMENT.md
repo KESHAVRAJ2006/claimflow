@@ -78,7 +78,7 @@ one triage to wake Neon and Qdrant too.
    | `QDRANT_URL` / `QDRANT_API_KEY` | From Qdrant Cloud |
    | `GROQ_API_KEY` / `GOOGLE_API_KEY` | At least one; leave the other blank |
    | `N8N_WEBHOOK_URL` | Leave blank for now; see [Notifications](#notifications-n8n) |
-   | `BACKEND_URL` (claimflow-web) | `https://claimflow-api.onrender.com`. If Render gives the API another URL (the name was taken), correct it afterwards under **claimflow-web → Environment**. |
+   | `BACKEND_URL` (claimflow-web) | `http://localhost:8000` for now; step 5 sets the real URL. Do not guess `https://claimflow-api.onrender.com`: that name belongs to someone else's service, so Render gives yours a suffix, and the console sends its API key to whatever this points at. |
 
 3. Apply. Render builds both images and starts them. The first API build takes about 5 minutes.
 4. Watch the **claimflow-api** logs. A healthy first start shows, in order:
@@ -86,7 +86,9 @@ one triage to wake Neon and Qdrant too.
    2. `provision_readonly_role: 'claimflow_agent' can SELECT from customers, policies, premium_payments, claims and write nothing.`
    3. `Seeded 50 customers, 80 policies, …`, then three `ingest: …: ingested` lines.
    4. `startup complete`, with `"triage_enabled": true`.
-5. Check that the API's URL (top of its page) matches the console's `BACKEND_URL`.
+5. Copy the API's URL from the top of its page (`https://claimflow-api-….onrender.com`) and check that
+   `<url>/api/health` answers `"status":"ok"`. Then set it as `BACKEND_URL` under **claimflow-web → Environment**
+   (**Save and deploy**). Sign in to the console only after that.
 6. Find the console password: **claimflow-web → Environment → `CONSOLE_PASSWORD`**.
 7. Open the claimflow-web URL and sign in as `reviewer` with that password. Then:
    1. Open **Claims**.

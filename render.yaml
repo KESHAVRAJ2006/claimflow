@@ -72,9 +72,10 @@ services:
     healthCheckPath: /healthz
     autoDeployTrigger: commit
     envVars:
-      # The API's public URL, shown at the top of claimflow-api's page: https://claimflow-api.onrender.com, or
-      # with a suffix if that name was taken. Free services cannot receive private network traffic, so the
-      # console calls the API over HTTPS. It is never called from a browser.
+      # The API's public URL, shown at the top of claimflow-api's page once it exists. Enter http://localhost:8000
+      # here, then set the real URL after the first deploy. Never guess https://claimflow-api.onrender.com: that
+      # name belongs to another service, and the console sends API_KEY with every request to this URL.
+      # Free services cannot receive private network traffic, so the console calls the API over HTTPS.
       - key: BACKEND_URL
         sync: false
       - key: API_KEY
