@@ -1,0 +1,141 @@
+TITLE: Individual Health Insurance Policy - Policy Wording
+DOCUMENT: Health_Policy.pdf
+@@PAGE
+ClaimFlow Demo Insurance Ltd is a fictional insurer created to demonstrate software. This wording is a sample and has no legal effect. Policy wording version 2026.1.
+
+SECTION 1 - ABOUT THIS POLICY
+1.1 Who we are
+This policy is issued by ClaimFlow Demo Insurance Ltd ("we", "us", "our") to the person named in the schedule ("you", "your"). The schedule, this wording and any endorsements form one contract.
+
+1.2 How cover works
+We pay the reasonable and customary cost of medically necessary treatment for an illness or injury that first requires hospitalisation during the policy period, up to the sum insured shown in the schedule. The sum insured is the most we pay for all claims in one policy year. Payment is made either directly to a network hospital (cashless) or to you as a reimbursement.
+
+1.3 Premium payment, grace period and lapse
+Premium may be paid annually or in quarterly installments. A grace period of 30 days applies to each installment. Cover continues during the grace period, but if the premium is still unpaid when it ends the policy lapses. No claim is payable for any hospitalisation that begins on or after the date of lapse, and any continuity benefits already earned against waiting periods are lost.
+
+SECTION 2 - DEFINITIONS
+2.1 Terms used in this policy
+Hospitalisation means admission to a hospital as an inpatient for a minimum of 24 consecutive hours on the advice of a medical practitioner.
+
+Day care treatment means a medical or surgical procedure that needs less than 24 hours of hospital stay because of technological advancement, and that would otherwise have required hospitalisation.
+
+Pre-existing disease means any condition, ailment, injury or disease that was diagnosed by a physician, or for which medical advice or treatment was received, within 48 months before the first policy issued by us.
+
+Network hospital means a hospital that has an agreement with us to provide cashless treatment.
+
+Medically necessary means treatment that is required for the medical management of the illness or injury, follows accepted medical practice, and could not safely be given at a lower level of care.
+
+Continuous coverage means uninterrupted cover under this policy, or a previous health policy ported to us, renewed within the grace period each year.
+@@PAGE
+SECTION 3 - WHAT IS COVERED
+3.1 Inpatient hospitalisation
+We pay the following expenses when hospitalisation is medically necessary: room, boarding and nursing charges; intensive care unit charges; fees of surgeons, anaesthetists, consultants and specialists; anaesthesia, blood, oxygen, operation theatre charges, surgical appliances, medicines and drugs; and diagnostic tests carried out during the admission.
+
+3.2 Pre-hospitalisation and post-hospitalisation expenses
+We pay medical expenses incurred in the 30 days before the date of admission and in the 60 days after discharge, provided they relate to the same condition for which the hospitalisation claim is admitted.
+
+3.3 Day care procedures
+We pay for day care treatment listed in our day care procedures list, including cataract surgery, dialysis, chemotherapy, radiotherapy, lithotripsy and tonsillectomy, even though the stay is less than 24 hours. Sub-limits in Section 4 apply.
+
+3.4 Emergency ambulance
+We pay up to INR 2,000 for each hospitalisation for road ambulance charges to take you to the nearest hospital for emergency care.
+
+3.5 Organ donor expenses
+We pay the hospitalisation expenses of an organ donor for harvesting an organ that is transplanted to you, provided the transplant claim itself is admitted.
+
+3.6 Accidental injuries
+Hospitalisation needed because of an accident is covered from the first day of the policy. The waiting periods in Section 5 do not apply to accidental injuries.
+@@PAGE
+SECTION 4 - SUB-LIMITS, DEDUCTIBLE AND CO-PAYMENT
+4.1 Room rent and ICU limits
+Room rent, boarding and nursing charges are payable up to 1 percent of the sum insured per day for a normal room, and up to 2 percent of the sum insured per day for an intensive care unit.
+
+4.2 Proportionate deduction for a higher room
+If you choose a room whose daily rent is above the eligible limit, all associated medical expenses of that hospitalisation, such as doctor fees, nursing and investigations, are reduced in the same proportion as the eligible room rent bears to the actual room rent. Medicines, implants and consumables are not reduced.
+
+4.3 Procedure sub-limits
+The most we pay for the following treatments, including all related expenses, is:
+- Cataract surgery: INR 40,000 for each eye in a policy year.
+- Hernia repair: INR 50,000 for each hospitalisation.
+- Knee or hip joint replacement: INR 150,000 for each joint.
+- Arthroscopic knee surgery, including ligament repair: INR 80,000 for each knee.
+- Treatment of kidney stones by lithotripsy: INR 30,000 for each policy year.
+
+4.4 Deductible
+A deductible of INR 10,000, or the amount shown in the schedule, applies to each claim. We pay the admissible amount above the deductible.
+
+4.5 Co-payment for older insured persons
+Where the insured person is aged 61 or over at the start of the policy year, you pay 20 percent of every admissible claim amount and we pay the remaining 80 percent. The co-payment is applied after the deductible and sub-limits.
+@@PAGE
+SECTION 5 - WAITING PERIODS
+5.1 Initial waiting period
+No claim is payable for any illness first diagnosed or treated within the first 30 days after the start of the first policy with us. This initial waiting period does not apply to accidental injuries or to renewals without a break.
+
+5.2 Specific illnesses and procedures
+The following conditions and procedures are covered only after 24 months of continuous coverage, whatever their cause, unless they arise from an accident:
+- Cataract.
+- Hernia of all types, and hydrocele.
+- Benign enlargement of the prostate.
+- Knee and hip joint replacement, arthroscopic knee surgery and ligament repair.
+- Gall bladder and kidney stones.
+- Chronic sinusitis, deviated nasal septum and tonsillitis.
+- Piles, fissures and fistula.
+- Varicose veins.
+
+5.3 Pre-existing diseases
+Any pre-existing disease declared in the proposal and accepted by us is covered only after 36 months of continuous coverage. An undeclared pre-existing disease is not covered at any time, and non-disclosure may make the policy voidable.
+
+5.4 Effect of renewal and lapse on waiting periods
+Waiting periods count down only while coverage is continuous. If the policy lapses and a new policy is issued later, all waiting periods start again from the beginning of the new policy. Any increase in the sum insured at renewal is subject to fresh waiting periods for the increased amount only.
+@@PAGE
+SECTION 6 - WHAT IS NOT COVERED (EXCLUSIONS)
+We will not pay for any claim arising from or connected with the following:
+
+6.1 Treatments that are not covered
+- Cosmetic or plastic surgery, unless it is reconstruction needed because of an accident, burns or cancer.
+- Dental treatment of any kind, unless it requires hospitalisation because of an accident.
+- Spectacles, contact lenses, hearing aids and outpatient treatment.
+- Treatment for obesity or weight control.
+- Infertility, sterility, assisted conception, pregnancy, childbirth and maternity expenses.
+- Experimental, unproven or unapproved treatment.
+- Admission primarily for diagnostic tests or evaluation, where no active treatment is given.
+- Rest cure, rehabilitation and respite care.
+
+6.2 Causes of illness or injury that are not covered
+- Intentional self-injury or attempted suicide.
+- Abuse of alcohol, drugs or other intoxicating substances, and their consequences.
+- Injury while taking part in hazardous or adventure sports such as racing, mountaineering, skydiving or scuba diving.
+- Participation in a criminal act.
+- War, invasion, nuclear, chemical or biological attack, and radioactive contamination.
+
+6.3 Other exclusions
+- Treatment received outside India.
+- Charges for registration, admission, documentation and similar non-medical items.
+- Any claim that is fraudulent, or supported by false documents or statements.
+@@PAGE
+SECTION 7 - CLAIMS PROCEDURE
+7.1 Cashless treatment at a network hospital
+For planned hospitalisation, the hospital must send a pre-authorisation request to us at least 48 hours before admission. For emergency hospitalisation, the request must be sent within 24 hours of admission. We respond to a complete pre-authorisation request within one hour.
+
+7.2 Reimbursement claims
+Where treatment is not cashless, notify us within 48 hours of admission and submit the claim documents within 30 days of discharge. Post-hospitalisation bills must be submitted within 15 days after the 60-day post-hospitalisation period ends.
+
+7.3 Documents required
+- Claim form signed by the insured person.
+- Discharge summary, and the original final hospital bill with an itemised break-up.
+- Payment receipts, prescriptions and investigation reports.
+- For accident cases, the FIR or medico-legal certificate where one was prepared.
+- KYC documents of the person receiving payment.
+
+7.4 Settlement
+We settle or reject a claim within 30 days of receiving the last necessary document. If we need more information, we ask for it once, listing everything required.
+
+SECTION 8 - GENERAL CONDITIONS
+8.1 Disclosure
+If any material fact, including a pre-existing disease, was not disclosed or was misrepresented in the proposal, we may reject a related claim and cancel the policy.
+
+8.2 Multiple policies and duplicate claims
+If you hold more than one health policy, you may choose which policy to claim under, but the same expense may not be recovered twice. A claim submitted for expenses that have already been claimed is treated as a duplicate and is not paid.
+
+8.3 Know Your Customer (KYC)
+We release claim payments only after KYC verification of the insured person is complete.

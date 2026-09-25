@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Colour tokens as RGB channels (so Tailwind can add opacity: bg-accent/10).
+ * Light is the default; .dark (set by next-themes on <html>) overrides.
+ */
+@layer base {
+  :root {
+    --background: 250 250 250; /* #FAFAFA */
+    --surface: 255 255 255; /* #FFFFFF */
+    --surface-muted: 244 244 245; /* zinc-100: hover and header fills */
+    --border: 228 228 231; /* zinc-200 #E4E4E7 */
+    --foreground: 24 24 27; /* zinc-900 */
+    --muted: 113 113 122; /* zinc-500: secondary text */
+    --subtle: 161 161 170; /* zinc-400: tertiary text, icons */
+    --ring: 79 70 229;
+    --accent: 79 70 229; /* indigo-600 #4F46E5 */
+    --accent-hover: 67 56 202; /* indigo-700 */
+    --accent-foreground: 255 255 255;
+    --approve: 5 150 105; /* emerald-600 */
+    --approve-soft: 236 253 245; /* emerald-50 */
+    --reject: 220 38 38; /* red-600 */
+    --reject-soft: 254 242 242; /* red-50 */
+    --escalate: 217 119 6; /* amber-600 */
+    --escalate-soft: 255 251 235; /* amber-50 */
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 9 9 11; /* zinc-950 */
+    --surface: 24 24 27; /* zinc-900 */
+    --surface-muted: 39 39 42; /* zinc-800 */
+    --border: 39 39 42; /* zinc-800 */
+    --foreground: 244 244 245; /* zinc-100 */
+    --muted: 161 161 170; /* zinc-400 */
+    --subtle: 113 113 122; /* zinc-500 */
+    --ring: 129 140 248;
+    --accent: 99 102 241; /* indigo-500: indigo-600 is too dark to read on zinc-900 */
+    --accent-hover: 129 140 248; /* indigo-400 */
+    --accent-foreground: 255 255 255;
+    /* The -500 shades keep status text above 4.5:1 contrast on dark surfaces. */
+    --approve: 16 185 129;
+    --approve-soft: 6 78 59;
+    --reject: 239 68 68;
+    --reject-soft: 69 10 10;
+    --escalate: 245 158 11;
+    --escalate-soft: 69 26 3;
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background font-sans text-body text-foreground;
+  }
+
+  /* Numbers line up in columns everywhere (amounts, ids, latencies). */
+  .font-mono,
+  td,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* One visible focus style for every interactive element; mouse clicks don't show it. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}

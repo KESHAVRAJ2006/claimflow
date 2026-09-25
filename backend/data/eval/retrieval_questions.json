@@ -1,0 +1,82 @@
+{
+  "k": 5,
+  "questions": [
+    {
+      "id": "motor-flooded-engine",
+      "question": "My car's engine seized after I drove it through a waterlogged underpass. Will the engine repair be paid?",
+      "product_type": "motor",
+      "relevant": [{"document": "Motor_Policy.pdf", "page": 3}]
+    },
+    {
+      "id": "motor-theft-police-deadline",
+      "question": "How many hours does a customer have to file a police complaint after the vehicle is stolen?",
+      "product_type": "motor",
+      "relevant": [{"document": "Motor_Policy.pdf", "page": 4}]
+    },
+    {
+      "id": "motor-plastic-parts-depreciation",
+      "question": "What percentage is deducted from the price of a new plastic bumper when it is replaced?",
+      "product_type": "motor",
+      "relevant": [{"document": "Motor_Policy.pdf", "page": 2}]
+    },
+    {
+      "id": "motor-unpaid-installment",
+      "question": "Is an accident claim payable if the quarterly premium was never paid and the grace period had already ended?",
+      "product_type": "motor",
+      "relevant": [{"document": "Motor_Policy.pdf", "page": 1}]
+    },
+    {
+      "id": "health-knee-arthroscopy-first-year",
+      "question": "Can the insured claim for an arthroscopic knee operation during the first year of the policy?",
+      "product_type": "health",
+      "relevant": [{"document": "Health_Policy.pdf", "page": 4}]
+    },
+    {
+      "id": "health-cataract-limit",
+      "question": "What is the most the insurer will pay for cataract surgery on one eye?",
+      "product_type": "health",
+      "relevant": [{"document": "Health_Policy.pdf", "page": 3}]
+    },
+    {
+      "id": "health-expensive-room",
+      "question": "The patient chose a private room that costs more than the eligible daily rent. How are the other hospital bills affected?",
+      "product_type": "health",
+      "relevant": [{"document": "Health_Policy.pdf", "page": 3}]
+    },
+    {
+      "id": "health-dental-cosmetic",
+      "question": "Are teeth treatments or cosmetic procedures reimbursed?",
+      "product_type": "health",
+      "relevant": [{"document": "Health_Policy.pdf", "page": 5}]
+    },
+    {
+      "id": "home-burglary-while-abroad",
+      "question": "Our flat was broken into while we were abroad for two months. Is the stolen property covered?",
+      "product_type": "home",
+      "relevant": [{"document": "Home_Policy.pdf", "page": 4}]
+    },
+    {
+      "id": "home-slow-seepage",
+      "question": "Water slowly seeped through the bathroom wall for months and ruined the plaster. Can we claim for it?",
+      "product_type": "home",
+      "relevant": [{"document": "Home_Policy.pdf", "page": 4}]
+    },
+    {
+      "id": "home-single-jewellery-item",
+      "question": "What is the maximum payout for one stolen necklace that was not listed separately in the schedule?",
+      "product_type": "home",
+      "relevant": [{"document": "Home_Policy.pdf", "page": 3}]
+    },
+    {
+      "id": "home-cyclone-new-policy",
+      "question": "A cyclone damaged the roof one week after we bought a brand new home policy. Is that covered yet?",
+      "product_type": "home",
+      "relevant": [{"document": "Home_Policy.pdf", "page": 3}]
+    }
+  ],
+  "off_topic": [
+    "What is the capital city of Australia?",
+    "Give me a recipe for vegetable biryani.",
+    "Who won the football world cup in 2010?"
+  ]
+}

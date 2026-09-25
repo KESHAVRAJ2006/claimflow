@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "claimflow": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "D:\\claimflow\\docker-compose.yml",
+        "run",
+        "--rm",
+        "-T",
+        "--quiet-build",
+        "--quiet-pull",
+        "backend",
+        "python",
+        "-m",
+        "scripts.run_mcp"
+      ]
+    }
+  }
+}

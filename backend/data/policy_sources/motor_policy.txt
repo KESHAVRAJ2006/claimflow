@@ -1,0 +1,121 @@
+TITLE: Private Car Package Policy - Policy Wording
+DOCUMENT: Motor_Policy.pdf
+@@PAGE
+ClaimFlow Demo Insurance Ltd is a fictional insurer created to demonstrate software. This wording is a sample and has no legal effect. Policy wording version 2026.1.
+
+SECTION 1 - ABOUT THIS POLICY
+1.1 Who we are
+This policy is issued by ClaimFlow Demo Insurance Ltd ("we", "us", "our"). It is a contract between us and the person named as the insured in the schedule ("you", "your"). The schedule, this wording and any endorsements must be read together as one document.
+
+1.2 How cover works
+We will indemnify you against loss of or damage to the insured vehicle, and against legal liability to third parties, arising during the period of insurance shown in the schedule, subject to the terms, conditions, limits and exclusions in this wording. Cover begins at 00:00 hours on the policy start date and ends at midnight on the policy end date. The most we will pay for loss of or damage to the insured vehicle is the Insured Declared Value (IDV) shown in the schedule, which is the sum insured for the vehicle. No claim is payable above the IDV.
+
+1.3 Premium payment and lapse
+Premium may be paid annually or in quarterly installments. If an installment is not received by its due date, a grace period of 30 days applies during which cover continues. If the installment is still unpaid when the grace period ends, the policy lapses automatically. No claim is payable for any accident, loss or damage occurring on or after the date of lapse. A lapsed policy may be reinstated only after a fresh inspection of the vehicle, and reinstatement never covers losses that occurred while the policy was lapsed.
+
+SECTION 2 - DEFINITIONS
+2.1 Terms used in this policy
+Accident means a sudden, unforeseen and involuntary event caused by external, visible and violent means.
+
+Insured Declared Value (IDV) means the value of the vehicle fixed at the start of the period of insurance, based on the manufacturer's listed selling price adjusted for the age of the vehicle.
+
+Deductible means the amount shown in the schedule, INR 5,000 for private cars unless stated otherwise, which you bear for each and every own damage claim.
+
+Consequential loss means any loss that follows from physical damage but is not itself physical damage, such as loss of use, hire charges or loss of income.
+
+Hydrostatic lock means damage to the engine caused by water entering the air intake and being drawn into the cylinders, usually when the engine is started or run in water.
+@@PAGE
+SECTION 3 - WHAT IS COVERED
+3.1 Own damage
+We cover loss of or damage to the insured vehicle and its accessories while fitted to it caused by fire, explosion, self-ignition or lightning; burglary, housebreaking or theft; riot and strike; malicious act; accidental external means, including collision and overturning; transit by road, rail, inland waterway or air; and natural calamities, namely flood, typhoon, hurricane, storm, cyclone, inundation, earthquake and landslide.
+
+3.2 Depreciation applied to replaced parts
+When parts are replaced instead of repaired, we deduct depreciation from the cost of the new parts at the following rates:
+- Rubber, nylon and plastic parts, tyres and tubes, and batteries: 50 percent.
+- Fibreglass components: 30 percent.
+- Glass parts: nil.
+- Metal parts, by age of the vehicle: up to 6 months nil; 6 months to 1 year 5 percent; 1 to 2 years 10 percent; 2 to 3 years 15 percent; 3 to 4 years 25 percent; 4 to 5 years 35 percent; 5 to 10 years 40 percent; over 10 years 50 percent.
+- Painting: 50 percent of the cost of paint material only.
+Labour charges for repair and refitting are paid in full and are never depreciated.
+
+3.3 Total loss and constructive total loss
+If the insured vehicle is stolen and not recovered within 90 days of the police report, or if the estimated cost of repair exceeds 75 percent of the IDV, the claim is settled as a total loss. We pay the IDV less the deductible, and the salvage becomes our property.
+
+3.4 Third party liability
+We cover your legal liability for death of or bodily injury to any person, and for damage to third party property up to INR 750,000, arising out of the use of the insured vehicle, as required by the Motor Vehicles Act.
+
+3.5 Personal accident cover for the owner-driver
+We pay INR 1,500,000 if the owner-driver dies or suffers permanent total disablement as a direct result of an accident while driving, mounting or dismounting the insured vehicle.
+@@PAGE
+SECTION 4 - WHAT IS NOT COVERED (EXCLUSIONS)
+We will not pay for any claim arising from or connected with the matters in this section.
+
+4.1 General exclusions
+- Accidental loss or damage occurring outside India.
+- Use of the vehicle for hire or reward, racing, speed testing or rallies, or for any purpose not permitted by the limitations as to use in the schedule.
+- Driving by a person who does not hold a valid and effective driving licence for that class of vehicle.
+- Driving under the influence of alcohol or drugs beyond the limits permitted by law.
+- Consequential loss, including loss of use, hire of a replacement vehicle, reduction in market value and loss of income.
+- War, invasion, nuclear weapons, ionising radiation or radioactive contamination.
+- Any liability assumed under a contract that would not exist in the absence of that contract.
+
+4.2 Wear, tear and mechanical breakdown
+We do not pay for normal wear and tear, gradual deterioration, rust, or mechanical or electrical breakdown, failure or breakage, unless it is caused by an insured event such as an accident or fire. Damage to tyres and tubes is excluded unless the vehicle is damaged at the same time.
+
+4.3 Flood and engine damage
+Damage to the body, interiors and electrical parts caused by flood or inundation is covered under Section 3.1. However, damage to the engine caused by water entering it (hydrostatic lock), including damage that occurs or becomes worse because the vehicle was started or driven through standing water, is excluded as consequential damage unless the schedule shows the Engine Protection add-on. Where the engine was damaged while the vehicle was parked and was not cranked, the claim is assessed under Section 3.1.
+
+4.4 Theft from an unlocked or unattended vehicle
+We do not pay for theft of the vehicle, or of accessories from it, where the vehicle was left unlocked, with the keys in or on the vehicle, or with the engine running.
+
+4.5 Deliberate acts and false claims
+Any loss caused deliberately by you or with your knowledge is not covered. If any claim is fraudulent or exaggerated in any respect, that claim is not payable and all benefits under this policy are forfeited.
+@@PAGE
+SECTION 5 - WAITING PERIODS
+5.1 Own damage and liability
+There is no waiting period for own damage or third party liability cover. Cover applies from 00:00 hours on the policy start date, subject to a satisfactory pre-inspection where our records show a break in insurance.
+
+5.2 Claims made soon after the policy starts
+Where an incident occurs within 30 days of the policy start date and the policy was issued without previous insurance or after a break in cover, we may require the pre-inspection report, photographs taken when the policy was issued, and independent proof of the date of the incident before the claim is assessed. This is a verification step and not an exclusion.
+
+5.3 Add-on covers
+The Engine Protection and Return to Invoice add-ons begin 15 days after they are added to an existing policy part-way through the period of insurance. They begin immediately when bought at renewal without a break in cover.
+
+SECTION 6 - CLAIMS PROCEDURE
+6.1 Notifying us
+Tell us about any accident, loss or damage as soon as possible and in any case within 48 hours, by calling the claims helpline or through the customer portal. Do not start repairs, other than those needed to prevent further damage, until our surveyor has inspected the vehicle, unless we agree in writing.
+
+6.2 Theft, burglary and malicious damage
+In the event of theft, burglary or malicious damage you must lodge a First Information Report (FIR) with the police within 24 hours of discovering the loss and give us a copy. You must also inform the Regional Transport Office. For theft of the vehicle we require all original keys and the non-traceable certificate issued by the police before we settle the claim.
+
+6.3 Documents required
+- Claim form signed by you.
+- Registration certificate, and the driving licence of the person driving at the time of the accident.
+- Copy of the FIR, where applicable.
+- Repair estimate, and the final invoice with proof of payment.
+- Photographs of the damage.
+
+6.4 Survey and settlement
+Claims where the estimated loss exceeds INR 50,000 are assessed by an independent licensed surveyor. We aim to settle within 30 days of receiving the survey report and all documents. If we need more information we will ask for it once, in writing, listing everything we require.
+@@PAGE
+SECTION 7 - GENERAL CONDITIONS
+7.1 Duty of disclosure
+You must answer the questions in the proposal truthfully and completely, and tell us promptly about any change in the use of the vehicle, any modification to it, or any change of ownership. If information that would have affected our decision to insure was withheld or misstated, we may refuse a claim connected with it.
+
+7.2 Care of the vehicle
+You must take all reasonable steps to safeguard the vehicle from loss or damage and keep it in an efficient and roadworthy condition. If the vehicle is driven after an accident before the necessary repairs are made, any further damage caused by doing so is at your own risk.
+
+7.3 No claim bonus
+If no claim is made during a period of insurance, the own damage premium at renewal is reduced by the no claim bonus: 20 percent after one claim-free year, 25 percent after two, 35 percent after three, 45 percent after four and 50 percent after five or more consecutive claim-free years. The bonus is lost if the policy is not renewed within 90 days of its end date.
+
+7.4 Duplicate and repeated claims
+Each loss may be claimed only once. If a claim is submitted for a loss that has already been claimed under this or any other policy, the later claim is treated as a duplicate and is not paid in addition to the original. Where more than three claims are made within any twelve-month period, we may review the full claims history before settling further claims.
+
+7.5 Know Your Customer (KYC)
+No claim payment is released until KYC verification of the insured is complete. Where KYC is pending, we ask for the missing documents and hold the payment until they are received and verified.
+
+7.6 Cancellation
+You may cancel this policy at any time by writing to us, and we refund the premium for the unexpired period on a short-period scale, provided no claim has been made. We may cancel the policy by giving 15 days notice in writing on the grounds of misrepresentation, fraud or non-disclosure of material facts.
+
+7.7 Complaints and disputes
+If you are unhappy with a claim decision, contact our Grievance Officer through the customer portal. If the matter is not resolved within 30 days, you may approach the Insurance Ombudsman. Where our liability is admitted but the amount is disputed, the difference may be referred to arbitration.

@@ -1,0 +1,230 @@
+{
+  "cases": [
+    {
+      "id": "M1",
+      "title": "Motor collision, rear-ended at a signal",
+      "kind": "coverage",
+      "base": {"product_type": "motor", "incident_type": "collision", "min_policy_age_days": 90},
+      "description": "Rear-ended by a truck while stopped at a traffic signal. Rear bumper, boot lid and both tail lamps damaged. Police report filed at the scene.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "3.1"},
+      "why": "Collision is own damage by accidental external means (Motor 3.1); no exclusion applies."
+    },
+    {
+      "id": "M2",
+      "title": "Motor theft, keys left in the ignition",
+      "kind": "coverage",
+      "base": {"product_type": "motor", "incident_type": "theft", "min_policy_age_days": 90},
+      "description": "Car stolen from outside my house in the evening. I had left the keys in the ignition while I carried shopping bags inside for a few minutes. FIR filed the same night.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "4.4"},
+      "why": "Theft with the keys in the vehicle is excluded (Motor 4.4)."
+    },
+    {
+      "id": "M3",
+      "title": "Motor flood, engine cranked in water",
+      "kind": "coverage",
+      "base": {"product_type": "motor", "incident_type": "natural_calamity", "min_policy_age_days": 90},
+      "description": "Drove into a waterlogged underpass during heavy rain and the engine stalled in the water. I tried to restart it twice. The garage says water was drawn into the cylinders and the engine needs an overhaul; there is no other damage.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "4.3"},
+      "why": "Engine damage from water drawn in after cranking (hydrostatic lock) is excluded without the Engine Protection add-on (Motor 4.3). Escalating is acceptable because the schedule's add-ons are not in the data."
+    },
+    {
+      "id": "M4",
+      "title": "Motor collision while over the alcohol limit",
+      "kind": "coverage",
+      "base": {"product_type": "motor", "incident_type": "collision", "min_policy_age_days": 90},
+      "description": "Hit the road divider at night on the way back from a party. The police breath test at the scene showed alcohol above the legal limit. Front bumper, bonnet and radiator damaged.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "4.1"},
+      "why": "Driving under the influence of alcohol beyond the legal limit is a general exclusion (Motor 4.1)."
+    },
+    {
+      "id": "M5",
+      "title": "Motor theft, no detail on keys or locks",
+      "kind": "coverage",
+      "base": {"product_type": "motor", "incident_type": "theft", "min_policy_age_days": 90},
+      "description": "Vehicle stolen from outside residence overnight; FIR filed.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "3.1"},
+      "why": "Theft is covered (Motor 3.1). Whether the car was locked is unknown, which is a question for the reviewer, not a reason to reject. This is the claim that used to burn both reflection retries."
+    },
+    {
+      "id": "H1",
+      "title": "Health, wrist fracture from a fall",
+      "kind": "coverage",
+      "base": {"product_type": "health", "incident_type": "hospitalisation", "min_policy_age_days": 60},
+      "description": "Fell from a ladder while cleaning the ceiling fan at home and fractured my right wrist. Admitted for three days for surgery to fix the fracture.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Health_Policy.pdf", "section": "3.6"},
+      "why": "Accidental injury is covered from day one and no waiting period applies (Health 3.6)."
+    },
+    {
+      "id": "H2",
+      "title": "Health, cataract inside the 24-month waiting period",
+      "kind": "coverage",
+      "base": {"product_type": "health", "incident_type": "day_care", "max_policy_age_days": 700, "first_policy": true},
+      "description": "Cataract surgery on the left eye, performed as a day care procedure.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Health_Policy.pdf", "section": "5.2"},
+      "why": "Cataract is covered only after 24 months of continuous coverage (Health 5.2), and this is the customer's first policy."
+    },
+    {
+      "id": "H3",
+      "title": "Health, cosmetic surgery",
+      "kind": "coverage",
+      "base": {"product_type": "health", "incident_type": "surgery", "min_policy_age_days": 60},
+      "description": "Elective liposuction and abdominoplasty for weight reduction. No accident, burns or cancer involved.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Health_Policy.pdf", "section": "6.1"},
+      "why": "Cosmetic surgery and treatment for weight control are excluded (Health 6.1)."
+    },
+    {
+      "id": "H4",
+      "title": "Health, dengue admission",
+      "kind": "coverage",
+      "base": {"product_type": "health", "incident_type": "hospitalisation", "min_policy_age_days": 60},
+      "description": "Admitted for four days with dengue fever; platelet count dropped and needed monitoring and IV fluids.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Health_Policy.pdf", "section": "3.1"},
+      "why": "Medically necessary inpatient hospitalisation is covered (Health 3.1); the 30-day initial waiting period has passed."
+    },
+    {
+      "id": "HM1",
+      "title": "Home, burst pipe",
+      "kind": "coverage",
+      "base": {"product_type": "home", "incident_type": "water_damage"},
+      "description": "A pipe burst suddenly in the upstairs bathroom overnight. Water came through the ceiling and damaged the living room ceiling and the wooden flooring.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Home_Policy.pdf", "section": "3.3"},
+      "why": "Sudden and accidental bursting of a pipe is covered (Home 3.3)."
+    },
+    {
+      "id": "HM2",
+      "title": "Home, slow roof leak",
+      "kind": "coverage",
+      "base": {"product_type": "home", "incident_type": "water_damage"},
+      "description": "Over the last few months damp patches have spread across the bedroom wall and the paint is peeling. A plumber found a slow leak where the roof meets the wall.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Home_Policy.pdf", "section": "6.2"},
+      "why": "Damage from water leaking or seeping over time, including damp patches and leaks through roofs, is excluded (Home 6.2)."
+    },
+    {
+      "id": "HM3",
+      "title": "Home, jewellery missing with no forced entry",
+      "kind": "coverage",
+      "base": {"product_type": "home", "incident_type": "burglary"},
+      "description": "Came back from a two-week trip and found gold jewellery missing from a bedroom drawer. All doors and windows were locked and there are no signs of forced entry.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "expected_citation": {"document": "Home_Policy.pdf", "section": "6.4"},
+      "why": "Theft without evidence of forcible entry is excluded (Home 6.4); burglary cover requires forcible entry (Home 3.4)."
+    },
+    {
+      "id": "R01",
+      "title": "Rule R01, amount above the sum insured",
+      "kind": "rule",
+      "base": {"edge_case": 1},
+      "description": "Windscreen smashed and side panels scratched while parked.",
+      "expected_outcome": "escalate",
+      "why": "Claiming 650,000 on a 500,000 sum insured scores 70 and exceeds the auto-decision limit: a person must cap the payout."
+    },
+    {
+      "id": "R02",
+      "title": "Rule R02, policy lapsed before the incident",
+      "kind": "rule",
+      "base": {"edge_case": 2},
+      "description": "Planned knee arthroscopy.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "expected_covered": false,
+      "why": "The policy lapsed for a missed premium before the incident: a hard block. Arthroscopy would also still be in its 24-month waiting period."
+    },
+    {
+      "id": "R03",
+      "title": "Rule R03, claim 12 days after the policy started",
+      "kind": "rule",
+      "base": {"edge_case": 3},
+      "description": "Roof and bonnet dented by a falling tree during a cyclone while parked.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Motor_Policy.pdf", "section": "3.1"},
+      "why": "A new-policy claim scores 40, below the escalation threshold, and cyclone damage is covered (Motor 3.1). Section 5.2 asks for verification, not an exclusion, so escalating is also defensible."
+    },
+    {
+      "id": "R04",
+      "title": "Rule R04, fourth claim in a year",
+      "kind": "rule",
+      "base": {"edge_case": 4},
+      "description": "Burst pipe in the upstairs bathroom damaged ceilings and flooring.",
+      "expected_outcome": "approve",
+      "also_acceptable": ["escalate"],
+      "expected_covered": true,
+      "expected_citation": {"document": "Home_Policy.pdf", "section": "3.3"},
+      "why": "Frequent claims score 35, below the escalation threshold, and a burst pipe is covered (Home 3.3)."
+    },
+    {
+      "id": "R05",
+      "title": "Rule R05, incident date in the future",
+      "kind": "rule",
+      "base": {"edge_case": 5},
+      "description": "Vehicle stolen from outside residence overnight; FIR filed.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "why": "An incident dated after submission is a hard block."
+    },
+    {
+      "id": "R06",
+      "title": "Rule R06, incident before the policy started",
+      "kind": "rule",
+      "base": {"edge_case": 6},
+      "description": "Admitted for four days with dengue fever.",
+      "expected_outcome": "reject",
+      "also_acceptable": ["escalate"],
+      "why": "The incident happened 15 days before cover began: a hard block."
+    },
+    {
+      "id": "R07",
+      "title": "Rule R07, duplicate of an approved claim",
+      "kind": "rule",
+      "base": {"edge_case": 7},
+      "description": "Rear-ended at a traffic signal; bumper and tail lamp damaged.",
+      "expected_outcome": "escalate",
+      "why": "Same policy, date and amount as an approved claim scores 70: paying the same loss twice must be ruled out by a person."
+    },
+    {
+      "id": "R08",
+      "title": "Rule R08, KYC pending",
+      "kind": "rule",
+      "base": {"edge_case": 8},
+      "description": "Cataract procedure performed as day care.",
+      "expected_outcome": "escalate",
+      "why": "Pending KYC scores 70: no payment may be released until identity is verified (anti-money-laundering)."
+    }
+  ]
+}

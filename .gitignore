@@ -1,0 +1,31 @@
+# Secrets — never commit real credentials
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Runtime data
+backend/data/uploads/
+*.sqlite
+*.sqlite3
+
+# Node / Next.js (Phase 8+)
+node_modules/
+.next/
+out/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

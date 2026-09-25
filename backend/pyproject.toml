@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claimflow"
+version = "0.1.0"
+description = "Agentic insurance claim triage with a deterministic rules core"
+requires-python = ">=3.11,<3.12"
+# Dependencies are added phase by phase so each one has a reason to exist.
+dependencies = [
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.32,<1.0",
+    "pydantic>=2.9,<3.0",
+    "pydantic-settings>=2.6,<3.0",
+    "sqlalchemy[asyncio]>=2.0.36,<2.1",
+    "asyncpg>=0.30,<1.0",
+    "alembic>=1.14,<2.0",
+    "qdrant-client>=1.13,<1.14",
+    "pypdf>=6.1,<7.0",
+    # In Docker, torch is installed first from the CPU-only index; PyPI's Linux wheel bundles unused CUDA (~2 GB).
+    "sentence-transformers>=6.0,<7.0",
+    "langchain-core>=1.6,<2.0",
+    "langchain-text-splitters>=1.1,<2.0",
+    # Phase 6: the agent graph, its checkpointer, and the two LLM providers (Groq primary, Gemini fallback).
+    "langgraph>=1.2,<2.0",
+    "langgraph-checkpoint-sqlite>=3.1,<4.0",
+    "langchain-groq>=1.1,<2.0",
+    "langchain-google-genai>=4.4,<5.0",
+    # Phase 7: multipart uploads (FastAPI's File/Form) and the outgoing n8n webhook.
+    "python-multipart>=0.0.20,<1.0",
+    "httpx>=0.27,<1.0",
+    # Phase 10: the MCP server. FastMCP 4 builds on the official MCP Python SDK (mcp 2.x), which it pins itself.
+    "fastmcp>=4.0,<5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3,<9.0",
+    "pytest-asyncio>=0.24,<1.0",
+    "ruff>=0.8",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# "auto" lets plain `async def test_...` functions run without a decorator on each one.
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    # Tests use in-memory Qdrant, which ignores payload indexes; the real server honours them.
+    "ignore:Payload indexes have no effect in the local Qdrant:UserWarning",
+]
+markers = [
+    "integration: needs a migrated Postgres; skipped automatically when unavailable",
+    "model: loads the real embedding model (slower); skipped automatically when it cannot be loaded",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
+# S101 flags `assert` (pytest relies on it); S311 flags `random` (fine for test data, not for secrets).
+# ASYNC240 in tests: checking tmp_path after an await is fine; tests don't serve concurrent requests.
+# S105/S106 in tests: tests need fixed fake secrets (webhook secrets, throwaway role passwords); none are real.
+per-file-ignores = { "tests/*" = ["S101", "S105", "S106", "S311", "ASYNC240"], "scripts/*" = ["S311"] }

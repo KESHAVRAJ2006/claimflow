@@ -1,0 +1,124 @@
+TITLE: Home Shield Building and Contents Policy - Policy Wording
+DOCUMENT: Home_Policy.pdf
+@@PAGE
+ClaimFlow Demo Insurance Ltd is a fictional insurer created to demonstrate software. This wording is a sample and has no legal effect. Policy wording version 2026.1.
+
+SECTION 1 - ABOUT THIS POLICY
+1.1 Who we are
+This policy is issued by ClaimFlow Demo Insurance Ltd ("we", "us", "our") to the person named in the schedule ("you", "your"). The schedule, this wording and any endorsements form one contract.
+
+1.2 How cover works
+We cover the building and the contents at the address shown in the schedule against the insured events in Section 3, during the period of insurance, up to the sums insured shown in the schedule for the building and for contents. The sums insured must represent the full cost of rebuilding the building and of replacing the contents as new.
+
+1.3 Premium payment and lapse
+Premium may be paid annually or in quarterly installments. A grace period of 30 days applies to each installment, during which cover continues. If the installment remains unpaid when the grace period ends, the policy lapses, and no claim is payable for any loss or damage that happens on or after the date of lapse.
+
+SECTION 2 - DEFINITIONS
+2.1 Terms used in this policy
+Building means the home, its permanent fixtures and fittings, boundary walls, gates and fixed water tanks at the insured address.
+
+Contents means household goods, furniture, electronics and personal effects belonging to you or your family and kept in the home.
+
+Valuables means jewellery, watches, articles of gold, silver or other precious metals, precious stones, works of art and collections.
+
+Unoccupied means that the home has not been lived in by you or a member of your family for more than 30 consecutive days.
+
+Sudden and accidental means an event that is unexpected and happens at a specific, identifiable moment, as opposed to damage that develops gradually over time.
+
+Forcible entry means entry into the home or a locked room by visible force and violence, leaving marks of damage at the point of entry.
+@@PAGE
+SECTION 3 - WHAT IS COVERED
+3.1 Fire, lightning and explosion
+We cover loss of or damage to the building and contents caused by fire, lightning, explosion or implosion, and damage caused by aircraft or articles dropped from them.
+
+3.2 Storm, flood and other natural events
+We cover loss or damage caused by storm, cyclone, typhoon, tempest, hurricane, tornado, flood and inundation, and by earthquake, landslide and rockslide. The waiting period in Section 5 applies to storm, cyclone and flood cover.
+
+3.3 Bursting or overflowing of water tanks and pipes
+We cover damage to the building and contents caused by the sudden and accidental bursting or overflowing of water tanks, apparatus and pipes. The cost of repairing the pipe or apparatus that burst is not covered.
+
+3.4 Burglary and housebreaking
+We cover theft of contents following forcible entry into or exit from the home, and damage to the building caused by the burglary or the attempt.
+
+3.5 Alternative accommodation
+If the home cannot be lived in because of damage covered by this policy, we pay reasonable rent for comparable alternative accommodation for up to 12 months, limited to 10 percent of the building sum insured.
+
+3.6 Basis of settlement
+Building claims are settled on a reinstatement basis, meaning the cost of repair or rebuilding to a condition equal to but not better than new. Contents claims are settled at the cost of replacement as new, less a deduction for wear and tear for items more than five years old.
+@@PAGE
+SECTION 4 - LIMITS AND DEDUCTIBLES
+4.1 Valuables and jewellery
+The most we pay for valuables in any one claim is 10 percent of the contents sum insured. The most we pay for any single article, pair or set is INR 50,000, unless the article is specified in the schedule with its own value. Valuables must be kept in a locked safe whenever the home is left unattended overnight.
+
+4.2 Cash and documents
+Cash, currency notes, bullion, securities and documents are not covered, except cash up to INR 5,000 stolen in a burglary covered under Section 3.4.
+
+4.3 Deductible
+You bear the first INR 10,000 of each and every claim. For claims caused by flood, storm, cyclone or earthquake, the deductible is 5 percent of the claim amount, subject to a minimum of INR 10,000.
+
+4.4 Underinsurance
+If, at the time of loss, the sum insured is less than 85 percent of the actual cost of rebuilding the building or replacing the contents, we pay only the proportion of the loss that the sum insured bears to that cost.
+
+SECTION 5 - WAITING PERIODS
+5.1 Fire, burglary and accidental damage
+There is no waiting period for fire, explosion, lightning, burglary, or bursting and overflowing of water tanks and pipes. Cover applies from the policy start date.
+
+5.2 Storm, cyclone and flood
+For a new policy, cover for storm, cyclone, typhoon, hurricane, tornado, flood and inundation begins 15 days after the policy start date. This waiting period prevents cover being bought when severe weather is already forecast. It does not apply when a policy is renewed with us without a break.
+
+5.3 Increases in sum insured
+Any increase in the sum insured made during the period of insurance applies to storm, cyclone and flood losses only after 15 days from the date of the increase.
+@@PAGE
+SECTION 6 - WHAT IS NOT COVERED (EXCLUSIONS)
+We will not pay for any loss or damage arising from or connected with the following:
+
+6.1 General exclusions
+- Wear and tear, gradual deterioration, rust, rot, fungus, mould, termites, insects and vermin.
+- Faulty design, materials or workmanship, and structural defects.
+- Loss or damage that happened before the policy start date.
+- Deliberate or wilful acts by you or your family.
+- Consequential loss of any kind, other than alternative accommodation under Section 3.5.
+- War, invasion, terrorism, nuclear or radioactive contamination.
+
+6.2 Gradual water damage
+We do not pay for damage caused by water leaking, seeping or dripping over a period of time, including dampness, damp patches, damage to plaster and paint from slow leaks, blocked drains or gutters, or leaks through roofs, walls and joints that were not maintained. Only the sudden and accidental bursting or overflowing described in Section 3.3 is covered.
+
+6.3 Unoccupied home
+If the home has been unoccupied for more than 30 consecutive days, we do not pay for theft, burglary, malicious damage, or damage caused by water escaping from tanks and pipes, that happens while it remains unoccupied, unless we agreed in writing before the period of unoccupancy began. Fire and natural calamity cover continues.
+
+6.4 Theft without forcible entry
+- Theft where there is no evidence of forcible entry into or exit from the home.
+- Theft by, or with the involvement of, a member of your family, a tenant or domestic staff.
+- Loss by mysterious disappearance or unexplained shortage.
+
+6.5 Specific property
+- Motor vehicles and their accessories, which need a separate motor policy.
+- Property used for business purposes, and goods held in trust.
+- Plants, lawns and trees, except when damaged by fire.
+@@PAGE
+SECTION 7 - CLAIMS PROCEDURE
+7.1 Notifying us
+Tell us about any loss or damage as soon as possible and in any case within 7 days of discovering it. Take reasonable steps to prevent further damage, and keep damaged items for inspection until we tell you they may be disposed of.
+
+7.2 Burglary and theft
+Report any burglary or theft to the police within 24 hours of discovering it and give us a copy of the First Information Report (FIR). Provide a list of stolen items with their approximate value and proof of ownership, such as invoices, photographs or valuation certificates.
+
+7.3 Documents required
+- Claim form signed by you.
+- Photographs of the damage, and repair estimates or invoices.
+- Copy of the FIR for burglary, theft or malicious damage.
+- For natural calamity claims, a report from the local authority where one is available.
+- KYC documents of the person receiving payment.
+
+7.4 Survey and settlement
+Claims estimated above INR 100,000 are inspected by an independent licensed surveyor. We settle within 30 days of receiving the survey report and all documents.
+
+SECTION 8 - GENERAL CONDITIONS
+8.1 Maintenance of the home
+You must keep the home in a good state of repair and take reasonable care to prevent loss or damage. We may reduce or refuse a claim to the extent that neglect caused or increased the loss.
+
+8.2 Duplicate claims and other insurance
+The same loss may be claimed only once. If the property is insured under another policy, we pay only our share of the loss, and a claim for a loss already paid is treated as a duplicate.
+
+8.3 Know Your Customer (KYC)
+No claim payment is released until KYC verification of the insured is complete.

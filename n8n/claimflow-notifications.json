@@ -1,0 +1,328 @@
+{
+  "id": "claimflowNotify1",
+  "name": "ClaimFlow notifications",
+  "active": true,
+  "settings": { "executionOrder": "v1", "saveDataSuccessExecution": "all", "saveDataErrorExecution": "all" },
+  "nodes": [
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000001",
+      "name": "ClaimFlow event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 300],
+      "webhookId": "5b0c7e0a-2f55-4a7e-9c11-3c1a1f0e0001",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claimflow",
+        "responseMode": "responseNode",
+        "options": { "rawBody": true }
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000002",
+      "name": "Verify signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Accept an event only if ClaimFlow signed it: HMAC-SHA256 over the EXACT body bytes, the scheme in\n// backend/app/services/webhooks.py. Re-serialising the parsed JSON would not reproduce those bytes, so the\n// Webhook node keeps the raw body (option \"Raw Body\") and the signature is checked against that.\nconst crypto = require('crypto');\n\nconst MAX_AGE_MS = 5 * 60 * 1000;  // a captured request can be replayed for at most 5 minutes\nconst MAX_SKEW_MS = 60 * 1000;     // tolerate a sender clock up to 1 minute ahead\nconst secret = $env.CLAIMFLOW_WEBHOOK_SECRET || '';\n\nconst reject = (reason) => [{ json: { valid: false, reason } }];\n\n// Fail closed: with no secret configured, nothing can be verified, so nothing is accepted.\nif (secret.length < 16) return reject('CLAIMFLOW_WEBHOOK_SECRET is not configured in n8n');\n\nconst item = $input.first();\nconst header = String((item.json.headers || {})['x-claimflow-signature'] || '');\nif (!header.startsWith('sha256=')) return reject('missing signature');\n\nconst raw = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(raw).digest('hex');\n// timingSafeEqual compares in constant time, so response timing reveals nothing about the right signature.\n// It throws on different lengths, hence the length check first (the length is public anyway).\nconst a = Buffer.from(header);\nconst b = Buffer.from(expected);\nif (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return reject('bad signature');\n\nlet event;\ntry {\n  event = JSON.parse(raw.toString('utf8'));\n} catch (error) {\n  return reject('body is not JSON');\n}\nconst age = Date.now() - Date.parse(event.sent_at);\nif (!Number.isFinite(age) || age > MAX_AGE_MS || age < -MAX_SKEW_MS) return reject('stale or undated event');\n\nreturn [{ json: { valid: true, reason: null, ...event } }];\n"
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000003",
+      "name": "Signed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [440, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000004",
+      "name": "Reject (401)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 420],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": $json.reason } }}",
+        "options": { "responseCode": 401 }
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000005",
+      "name": "Accept (202)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 200],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"accepted\": true, \"event\": $json.event } }}",
+        "options": { "responseCode": 202 }
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000006",
+      "name": "Route by event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [880, 200],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "escalated",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r1a", "leftValue": "={{ $json.event }}", "rightValue": "claim.triaged", "operator": { "type": "string", "operation": "equals" } },
+                  { "id": "r1b", "leftValue": "={{ $json.status }}", "rightValue": "escalated", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            },
+            {
+              "outputKey": "ready for review",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r2a", "leftValue": "={{ $json.event }}", "rightValue": "claim.triaged", "operator": { "type": "string", "operation": "equals" } },
+                  { "id": "r2b", "leftValue": "={{ $json.status }}", "rightValue": "awaiting_review", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            },
+            {
+              "outputKey": "triage failed",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r3a", "leftValue": "={{ $json.event }}", "rightValue": "claim.triaged", "operator": { "type": "string", "operation": "equals" } },
+                  { "id": "r3b", "leftValue": "={{ $json.status }}", "rightValue": "failed", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            },
+            {
+              "outputKey": "overridden",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r4", "leftValue": "={{ $json.event }}", "rightValue": "claim.overridden", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            },
+            {
+              "outputKey": "decided",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r5", "leftValue": "={{ $json.event }}", "rightValue": "claim.decided", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            },
+            {
+              "outputKey": "info requested",
+              "renameOutput": true,
+              "conditions": {
+                "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "r6", "leftValue": "={{ $json.event }}", "rightValue": "claim.info_requested", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000011",
+      "name": "Escalation message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, -40],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m1", "name": "text", "type": "string", "value": "=:warning: *{{ $json.claim_number }}* was escalated for senior review.\nRisk score {{ $json.risk_score ?? 'n/a' }}/100, confidence {{ $json.confidence ?? 'n/a' }}.\nWhy: {{ ($json.reasons || []).join('; ') }}" },
+            { "id": "m1b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000012",
+      "name": "Review message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 80],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m2", "name": "text", "type": "string", "value": "=*{{ $json.claim_number }}* is ready for review. AI recommendation: *{{ $json.recommended_outcome }}* (confidence {{ $json.confidence }}, risk {{ $json.risk_score }}/100).\nAI-assisted recommendation: a reviewer makes the decision." },
+            { "id": "m2b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000013",
+      "name": "Failure message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 200],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m3", "name": "text", "type": "string", "value": "=:x: Triage of *{{ $json.claim_number }}* failed: {{ ($json.reasons || []).join('; ') }}\nThe claim needs to be re-run or handled manually." },
+            { "id": "m3b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000014",
+      "name": "Override message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 320],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m4", "name": "text", "type": "string", "value": "=:mag: *{{ $json.claim_number }}*: {{ $json.reviewer }} overrode the AI ({{ $json.recommended_outcome }}) and decided *{{ $json.final_outcome }}*.\nReason: {{ $json.reason }}" },
+            { "id": "m4b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000015",
+      "name": "Decision message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 440],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m5", "name": "text", "type": "string", "value": "=:white_check_mark: *{{ $json.claim_number }}* {{ $json.final_outcome }} by {{ $json.reviewer }}, in line with the AI recommendation." },
+            { "id": "m5b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000016",
+      "name": "Info request message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 560],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "m6", "name": "text", "type": "string", "value": "=:envelope: {{ $json.reviewer }} requested more information on *{{ $json.claim_number }}*: {{ $json.reason }}" },
+            { "id": "m6b", "name": "claim_number", "type": "string", "value": "={{ $json.claim_number }}" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000020",
+      "name": "Destination set?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1360, 260],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose", "version": 2 },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "d1",
+              "leftValue": "={{ $env.NOTIFY_WEBHOOK_URL || '' }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f5e3a51-0c7a-4d0e-9d7e-000000000021",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1580, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NOTIFY_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"text\": $json.text } }}",
+        "options": { "timeout": 10000 }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "ClaimFlow event": { "main": [[{ "node": "Verify signature", "type": "main", "index": 0 }]] },
+    "Verify signature": { "main": [[{ "node": "Signed?", "type": "main", "index": 0 }]] },
+    "Signed?": {
+      "main": [
+        [{ "node": "Accept (202)", "type": "main", "index": 0 }],
+        [{ "node": "Reject (401)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Accept (202)": { "main": [[{ "node": "Route by event", "type": "main", "index": 0 }]] },
+    "Route by event": {
+      "main": [
+        [{ "node": "Escalation message", "type": "main", "index": 0 }],
+        [{ "node": "Review message", "type": "main", "index": 0 }],
+        [{ "node": "Failure message", "type": "main", "index": 0 }],
+        [{ "node": "Override message", "type": "main", "index": 0 }],
+        [{ "node": "Decision message", "type": "main", "index": 0 }],
+        [{ "node": "Info request message", "type": "main", "index": 0 }]
+      ]
+    },
+    "Escalation message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Review message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Failure message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Override message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Decision message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Info request message": { "main": [[{ "node": "Destination set?", "type": "main", "index": 0 }]] },
+    "Destination set?": { "main": [[{ "node": "Post to Slack", "type": "main", "index": 0 }], []] }
+  },
+  "pinData": {}
+}

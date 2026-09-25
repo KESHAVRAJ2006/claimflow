@@ -1,0 +1,154 @@
+# Local development stack. Production images and Render config arrive in Phase 11.
+name: claimflow
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-claimflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-claimflow_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-claimflow}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready only succeeds once Postgres accepts connections, not just when the process starts.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    # Pinned to match the qdrant-client minor version in pyproject.toml; mismatches cause API warnings.
+    image: qdrant/qdrant:v1.13.4
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      # The Qdrant image ships without curl/wget, so we speak raw HTTP over bash's /dev/tcp.
+      # /readyz returns 200 only after all collections are loaded.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && printf 'GET /readyz HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q ' 200 ' <&3"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      # The dev stage: dev tools, tests, hot reload. Render builds the final (runtime) stage instead.
+      target: dev
+    # Rebuild on every `docker compose up`. Layer caching makes an unchanged rebuild take seconds, and it
+    # rules out running a stale image that lacks newly added code or dependencies.
+    pull_policy: build
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Service names (postgres, qdrant) resolve on the compose network; localhost would point at the container itself.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-claimflow}:${POSTGRES_PASSWORD:-claimflow_dev_password}@postgres:5432/${POSTGRES_DB:-claimflow}
+      # SELECT-only login for the agent tools; created and kept in sync by scripts.provision_readonly_role.
+      # Settings derives TOOLS_DATABASE_URL from DATABASE_URL and these two, escaping the password, so any
+      # characters are safe in it (pasting it into a URL here would break on / @ : and friends).
+      AGENT_DB_USER: ${AGENT_DB_USER:-claimflow_agent}
+      AGENT_DB_PASSWORD: ${AGENT_DB_PASSWORD:-claimflow_agent_dev_password}
+      QDRANT_URL: http://qdrant:6333
+      # LLM keys come from .env; empty means "not configured" (agents then refuse to start with a clear error).
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      CHECKPOINT_PATH: /tmp/claimflow_checkpoints.sqlite
+      API_KEY: ${API_KEY:-dev-local-api-key-change-me}
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      # Bearer token for the MCP server's optional HTTP transport (stdio for Claude Desktop needs none).
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      HEALTH_CHECK_TIMEOUT_S: ${HEALTH_CHECK_TIMEOUT_S:-2.0}
+      # Docker Desktop on Windows does not forward file-change events into containers, so poll instead.
+      WATCHFILES_FORCE_POLLING: "true"
+    # Startup sequence:
+    #   1. migrate:   bring the schema to the latest migration (stops with instructions on a schema conflict)
+    #   2. provision: create/refresh the agent tools' SELECT-only login. A failure doesn't block the API; the
+    #                 tools then fail closed (they cannot connect), which is the safe direction.
+    #   3. seed:      load demo data if the database is empty, or refresh it if it is untouched but from an
+    #                 earlier day; never wipes data the app has written. A seed failure doesn't block the API.
+    #   4. ingest:    index the policy PDFs into Qdrant; skips documents that are already indexed unchanged.
+    #   5. uvicorn:   `exec` replaces the shell, so `docker compose stop` signals uvicorn directly.
+    command:
+      - sh
+      - -c
+      - >-
+        python -m scripts.migrate &&
+        { python -m scripts.provision_readonly_role || echo "WARNING: read-only role provisioning failed (see error above); agent tools will be unavailable" >&2; } &&
+        { python -m scripts.seed || echo "WARNING: seeding failed (see error above); starting the API anyway" >&2; } &&
+        { python -m scripts.ingest_policies || echo "WARNING: policy ingestion failed (see error above)" >&2; } &&
+        exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Mount source so edits reload without rebuilding the image.
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+      - ./backend/migrations:/app/migrations
+      - ./backend/scripts:/app/scripts
+      - ./backend/data:/app/data
+      - ./backend/alembic.ini:/app/alembic.ini
+      # Mounted so docker-entrypoint.sh notices dependency changes on restart without a rebuild.
+      - ./backend/pyproject.toml:/app/pyproject.toml
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      # urlopen raises on a 503, so the container is unhealthy whenever a dependency is down.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # Startup now includes migrations, seeding, ingestion and loading the embedding model.
+      start_period: 90s
+
+  # Notifications (Phase 11). Opt-in: `docker compose --profile notifications up -d`.
+  # Receives ClaimFlow's signed webhooks, verifies them, and posts Slack-compatible messages.
+  n8n:
+    image: n8nio/n8n:2.40.6
+    profiles: ["notifications"]
+    # Import (and publish) the workflow from ./n8n on every start, so the running workflow always matches the
+    # file in git. Import overwrites by workflow id, so repeating it is safe. tini stays PID 1 to reap children.
+    entrypoint: ["/sbin/tini", "--", "/bin/sh", "-c"]
+    command:
+      - >-
+        n8n import:workflow --input=/workflows/claimflow-notifications.json &&
+        n8n publish:workflow --id=claimflowNotify1 &&
+        exec n8n start
+    environment:
+      GENERIC_TIMEZONE: UTC
+      TZ: UTC
+      N8N_PORT: 5678
+      # n8n's own public base URL (shown in the editor for webhook nodes). Not the backend's N8N_WEBHOOK_URL.
+      N8N_WEBHOOK_URL: http://localhost:5678/
+      # No N8N_ENCRYPTION_KEY on purpose: n8n generates one on first start and keeps it in the n8n_data volume,
+      # so it can never disagree with the key its stored data was encrypted with.
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      # The workflow reads two values from the environment: the shared HMAC secret and the destination URL.
+      # This n8n instance holds no other secrets, so allowing env access in nodes exposes only those two.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      # The signature check needs Node's crypto module (HMAC and constant-time comparison); nothing else.
+      NODE_FUNCTION_ALLOW_BUILTIN: crypto
+      CLAIMFLOW_WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      # A Slack incoming-webhook URL (Discord accepts the same payload at <discord webhook URL>/slack).
+      # Empty: messages are built but not sent; they are visible under Executions in the n8n UI.
+      NOTIFY_WEBHOOK_URL: ${NOTIFY_WEBHOOK_URL:-}
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n:/workflows:ro
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  n8n_data:

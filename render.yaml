@@ -1,0 +1,100 @@
+# Render Blueprint for ClaimFlow: the API, the reviewer console and Postgres 16.
+# Deploy: Render dashboard -> New -> Blueprint -> this repository. Full walkthrough: docs/DEPLOYMENT.md.
+#
+# Not created here, because Render does not host them:
+#   - Qdrant: use a Qdrant Cloud free cluster (QDRANT_URL / QDRANT_API_KEY below).
+#   - n8n:    n8n Cloud or any n8n you run; import n8n/claimflow-notifications.json (N8N_WEBHOOK_URL below).
+# Values marked `sync: false` are asked for once, when the Blueprint is first applied.
+
+databases:
+  - name: claimflow-db
+    databaseName: claimflow
+    user: claimflow
+    # 256 MB RAM, enough for the demo data set. "free" also works but Render deletes free databases after 30 days.
+    plan: 0.1c-256mb
+    postgresMajorVersion: "16"
+    region: singapore
+    # No IPs allowed: only services inside this Render account reach the database, over the private network.
+    ipAllowList: []
+
+services:
+  - type: web
+    name: claimflow-api
+    runtime: docker
+    # Builds the Dockerfile's last stage (runtime): no dev tools, no tests, non-root, model baked in.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # 2 GB: the embedding model, torch and LangGraph need ~500 MB at rest and more during a triage run.
+    # 512 MB instances run out of memory.
+    plan: 1c-2g
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      # Render gives postgres://...; Settings rewrites it for asyncpg.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: claimflow-db
+          property: connectionString
+      # The agents' SELECT-only login. render.yaml cannot build a URL from parts, so Settings derives
+      # TOOLS_DATABASE_URL from DATABASE_URL and these two; scripts/start.sh creates the login on every deploy.
+      - key: AGENT_DB_USER
+        value: claimflow_agent
+      - key: AGENT_DB_PASSWORD
+        generateValue: true
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      # At least one LLM key; both gives the Groq -> Gemini fallback.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      # Shared with the console (below), which adds it server-side. 256 random bits; production requires 32+ chars.
+      - key: API_KEY
+        generateValue: true
+      # Only the console calls the API, server to server; no browser origin needs CORS.
+      - key: CORS_ORIGINS
+        value: "[]"
+      - key: N8N_WEBHOOK_URL
+        sync: false
+      # Copy this value into n8n as CLAIMFLOW_WEBHOOK_SECRET, so n8n can verify each event's signature.
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      # A demo deployment starts with the synthetic data set (never wipes data the app has written).
+      - key: SEED_DEMO_DATA
+        value: "true"
+      - key: MAX_CONCURRENT_RUNS
+        value: "2"
+      - key: LOG_LEVEL
+        value: INFO
+
+  - type: web
+    name: claimflow-web
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    # A paid instance so it can reach the API over Render's private network (BACKEND_URL below).
+    plan: 0.5c-512mb
+    region: singapore
+    # Exempt from the Basic auth; answers without calling the API.
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      # host:port on the private network; the proxy adds http://. The API is never called from a browser.
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: claimflow-api
+          property: hostport
+      - key: API_KEY
+        fromService:
+          type: web
+          name: claimflow-api
+          envVarKey: API_KEY
+      # HTTP Basic auth for the whole console (middleware.ts). Read the generated password in the dashboard.
+      - key: CONSOLE_USER
+        value: reviewer
+      - key: CONSOLE_PASSWORD
+        generateValue: true

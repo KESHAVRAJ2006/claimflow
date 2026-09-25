@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+# Never bake local secrets (API_KEY in .env.local) into an image; the platform injects them at runtime.
+.env*
+!.env.example
+*.tsbuildinfo
+npm-debug.log*

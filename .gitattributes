@@ -1,0 +1,2 @@
+# Shell scripts run inside Linux containers; Windows CRLF line endings would break them ("/bin/sh^M: not found").
+*.sh text eol=lf

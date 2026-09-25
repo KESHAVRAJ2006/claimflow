@@ -1,0 +1,472 @@
+{
+  "simple": {
+    "claim_number": "CLM-2024-000131",
+    "tool_call_log": [
+      {
+        "call_id": "T1",
+        "round": 1,
+        "step": 1,
+        "tool": "get_policy_status",
+        "args": {
+          "on_date": "2024-02-24",
+          "policy_number": "MOT-2023-000052"
+        },
+        "status": "ok",
+        "result_summary": "MOT-2023-000052 expired; sum insured 750000.00; in force on 2024-02-24 (day 302)",
+        "result_data": {
+          "policy_number": "MOT-2023-000052",
+          "product_type": "motor",
+          "status": "expired",
+          "start_date": "2023-04-28",
+          "end_date": "2024-04-26",
+          "lapsed_on": null,
+          "sum_insured": "750000.00",
+          "deductible": "5000.00",
+          "policy_document": "Motor_Policy.pdf",
+          "on_date": "2024-02-24",
+          "in_force_on_date": true,
+          "days_since_start": 302,
+          "note": null
+        },
+        "latency_ms": 6,
+        "started_at": "2026-09-24T17:04:59.457524Z"
+      },
+      {
+        "call_id": "T2",
+        "round": 1,
+        "step": 2,
+        "tool": "get_claim_history",
+        "args": {
+          "exclude_claim_number": "CLM-2024-000131",
+          "policy_number": "MOT-2023-000052",
+          "reference_date": "2024-02-24"
+        },
+        "status": "ok",
+        "result_summary": "4 other claims; 1 in the 12 months to 2024-02-24; 1 rejected",
+        "result_data": {
+          "customer_ref": "CUS-00026",
+          "reference_date": "2024-02-24",
+          "excluded_claim_number": "CLM-2024-000131",
+          "total_claims": 4,
+          "other_claims_in_prior_12_months": 1,
+          "rejected_claims": 1,
+          "total_claimed_amount": "264000.00",
+          "claims": [
+            {
+              "claim_number": "CLM-2023-000108",
+              "policy_number": "MOT-2023-000052",
+              "product_type": "motor",
+              "incident_type": "vandalism",
+              "incident_date": "2023-06-16",
+              "claimed_amount": "65500.00",
+              "status": "approved",
+              "final_outcome": "approve",
+              "days_before_reference": 253
+            },
+            {
+              "claim_number": "CLM-2023-000095",
+              "policy_number": "MOT-2022-000051",
+              "product_type": "motor",
+              "incident_type": "collision",
+              "incident_date": "2023-02-12",
+              "claimed_amount": "166500.00",
+              "status": "rejected",
+              "final_outcome": "reject",
+              "days_before_reference": 377
+            },
+            {
+              "claim_number": "CLM-2022-000083",
+              "policy_number": "MOT-2022-000051",
+              "product_type": "motor",
+              "incident_type": "vandalism",
+              "incident_date": "2022-10-10",
+              "claimed_amount": "22500.00",
+              "status": "approved",
+              "final_outcome": "approve",
+              "days_before_reference": 502
+            },
+            {
+              "claim_number": "CLM-2022-000073",
+              "policy_number": "MOT-2022-000051",
+              "product_type": "motor",
+              "incident_type": "theft",
+              "incident_date": "2022-06-07",
+              "claimed_amount": "9500.00",
+              "status": "approved",
+              "final_outcome": "approve",
+              "days_before_reference": 627
+            }
+          ],
+          "claims_omitted": 0
+        },
+        "latency_ms": 12,
+        "started_at": "2026-09-24T17:05:00.539991Z"
+      },
+      {
+        "call_id": "T3",
+        "round": 1,
+        "step": 3,
+        "tool": "check_exclusions",
+        "args": {
+          "incident_description": "side collision while reversing out of a parking bay",
+          "product_type": "motor"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.5 (0.26); confidence 0.16; evidence E1, E2, E3, E4, E5",
+        "result_data": {
+          "evidence_ids": [
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "retrieval_confidence": 0.164
+        },
+        "latency_ms": 61,
+        "started_at": "2026-09-24T17:05:23.459094Z"
+      },
+      {
+        "call_id": "T4",
+        "round": 1,
+        "step": 4,
+        "tool": "get_coverage_section",
+        "args": {
+          "incident_type": "collision",
+          "product_type": "motor"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.2 (0.49); confidence 0.82; evidence E6, E7, E8, E9, E10",
+        "result_data": {
+          "evidence_ids": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10"
+          ],
+          "retrieval_confidence": 0.818
+        },
+        "latency_ms": 63,
+        "started_at": "2026-09-24T17:05:54.719669Z"
+      },
+      {
+        "call_id": "T5",
+        "round": 1,
+        "step": 5,
+        "tool": "check_similar_claims",
+        "args": {
+          "claim_number": "CLM-2024-000131"
+        },
+        "status": "ok",
+        "result_summary": "no similar claims",
+        "result_data": {
+          "claim_number": "CLM-2024-000131",
+          "incident_type": "collision",
+          "incident_date": "2024-02-24",
+          "claimed_amount": "10000.00",
+          "exact_duplicates": 0,
+          "same_customer_matches": 0,
+          "other_customer_matches": 0,
+          "matches": []
+        },
+        "latency_ms": 18,
+        "started_at": "2026-09-24T17:06:30.573370Z"
+      },
+      {
+        "call_id": "T6",
+        "round": 2,
+        "step": 1,
+        "tool": "check_exclusions",
+        "args": {
+          "incident_description": "collision while reversing out of a parking bay",
+          "product_type": "motor"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.5 (0.29); confidence 0.26; evidence E1, E2, E3, E4, E5",
+        "result_data": {
+          "evidence_ids": [
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "retrieval_confidence": 0.255
+        },
+        "latency_ms": 53,
+        "started_at": "2026-09-24T17:08:10.602601Z"
+      },
+      {
+        "call_id": "T7",
+        "round": 2,
+        "step": 2,
+        "tool": "search_policy",
+        "args": {
+          "product_type": "motor",
+          "query": "collision while reversing"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.5 (0.22); confidence 0.06; evidence E1, E6, E7, E2, E11",
+        "result_data": {
+          "evidence_ids": [
+            "E1",
+            "E6",
+            "E7",
+            "E2",
+            "E11"
+          ],
+          "retrieval_confidence": 0.056
+        },
+        "latency_ms": 38,
+        "started_at": "2026-09-24T17:08:20.093775Z"
+      },
+      {
+        "call_id": "T8",
+        "round": 2,
+        "step": 3,
+        "tool": "search_policy",
+        "args": {
+          "product_type": "motor",
+          "query": "reversing"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.5 (0.08); confidence 0.00; evidence E12, E1, E10, E11, E13",
+        "result_data": {
+          "evidence_ids": [
+            "E12",
+            "E1",
+            "E10",
+            "E11",
+            "E13"
+          ],
+          "retrieval_confidence": 0.0
+        },
+        "latency_ms": 27,
+        "started_at": "2026-09-24T17:08:54.594189Z"
+      },
+      {
+        "call_id": "T9",
+        "round": 2,
+        "step": 4,
+        "tool": "search_policy",
+        "args": {
+          "product_type": "motor",
+          "query": "parking"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.3 (0.25); confidence 0.13; evidence E4, E6, E2, E1, E3",
+        "result_data": {
+          "evidence_ids": [
+            "E4",
+            "E6",
+            "E2",
+            "E1",
+            "E3"
+          ],
+          "retrieval_confidence": 0.131
+        },
+        "latency_ms": 27,
+        "started_at": "2026-09-24T17:09:16.540117Z"
+      },
+      {
+        "call_id": "T10",
+        "round": 2,
+        "step": 5,
+        "tool": "check_exclusions",
+        "args": {
+          "incident_description": "collision",
+          "product_type": "motor"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.5 (0.22); confidence 0.06; evidence E1, E2, E3, E14, E15",
+        "result_data": {
+          "evidence_ids": [
+            "E1",
+            "E2",
+            "E3",
+            "E14",
+            "E15"
+          ],
+          "retrieval_confidence": 0.056
+        },
+        "latency_ms": 27,
+        "started_at": "2026-09-24T17:10:05.426652Z"
+      },
+      {
+        "call_id": "T11",
+        "round": 2,
+        "step": 6,
+        "tool": "get_coverage_section",
+        "args": {
+          "incident_type": "collision",
+          "product_type": "motor"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Motor_Policy.pdf p.2 (0.49); confidence 0.82; evidence E6, E7, E8, E9, E10",
+        "result_data": {
+          "evidence_ids": [
+            "E6",
+            "E7",
+            "E8",
+            "E9",
+            "E10"
+          ],
+          "retrieval_confidence": 0.818
+        },
+        "latency_ms": 44,
+        "started_at": "2026-09-24T17:10:34.600195Z"
+      }
+    ],
+    "final": {
+      "outcome": "escalate",
+      "reasons": [
+        "Agent loop limit reached: Investigation round 2 stopped early: reached the 6-step limit without submitting findings"
+      ],
+      "covered": true,
+      "agent_confidence": "0.900",
+      "retrieval_confidence": "0.818",
+      "confidence": "0.818",
+      "risk_score": 0,
+      "hard_blocks": [],
+      "triggered_rules": [],
+      "summary": "The motor policy explicitly covers collision damage under its Own damage provision and was active on the incident date, so the loss is covered. No exclusion for reversing collisions was found, supporting a high confidence in coverage.",
+      "citations": [
+        {
+          "evidence_id": "E7",
+          "document": "Motor_Policy.pdf",
+          "page": 2,
+          "section": "3.1 Own damage",
+          "quote": "accidental external means, including collision",
+          "label": "Motor_Policy.pdf p.2"
+        }
+      ],
+      "escalation_flags": [
+        "Investigation round 2 stopped early: reached the 6-step limit without submitting findings"
+      ],
+      "requires_human_review": true,
+      "disclaimer": "AI-assisted recommendation for a human reviewer. It is not an automated determination; a person makes the final decision."
+    }
+  },
+  "complex": {
+    "claim_number": "CLM-2026-900002",
+    "tool_call_log": [
+      {
+        "call_id": "T1",
+        "round": 1,
+        "step": 1,
+        "tool": "get_policy_status",
+        "args": {
+          "on_date": "2026-08-05",
+          "policy_number": "HLT-2025-000002"
+        },
+        "status": "ok",
+        "result_summary": "HLT-2025-000002 lapsed; sum insured 300000.00; NOT in force on 2026-08-05 (day 250)",
+        "result_data": {
+          "policy_number": "HLT-2025-000002",
+          "product_type": "health",
+          "status": "lapsed",
+          "start_date": "2025-11-28",
+          "end_date": "2026-11-27",
+          "lapsed_on": "2026-06-28",
+          "sum_insured": "300000.00",
+          "deductible": "10000.00",
+          "policy_document": "Health_Policy.pdf",
+          "on_date": "2026-08-05",
+          "in_force_on_date": false,
+          "days_since_start": 250,
+          "note": null
+        },
+        "latency_ms": 5,
+        "started_at": "2026-09-24T17:12:50.365029Z"
+      },
+      {
+        "call_id": "T2",
+        "round": 1,
+        "step": 2,
+        "tool": "get_coverage_section",
+        "args": {
+          "incident_type": "knee arthroscopy surgery",
+          "product_type": "health"
+        },
+        "status": "ok",
+        "result_summary": "5 passages; best Health_Policy.pdf p.3 (0.48); confidence 0.80; evidence E1, E2, E3, E4, E5",
+        "result_data": {
+          "evidence_ids": [
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "retrieval_confidence": 0.804
+        },
+        "latency_ms": 29,
+        "started_at": "2026-09-24T17:12:53.960395Z"
+      },
+      {
+        "call_id": "T3",
+        "round": 1,
+        "step": 3,
+        "tool": "get_waiting_period",
+        "args": {
+          "condition_or_event": "knee arthroscopy surgery",
+          "product_type": "health"
+        },
+        "status": "ok",
+        "result_summary": "4 passages; best Health_Policy.pdf p.4 (0.47); confidence 0.78; evidence E6, E7, E8, E9",
+        "result_data": {
+          "evidence_ids": [
+            "E6",
+            "E7",
+            "E8",
+            "E9"
+          ],
+          "retrieval_confidence": 0.779
+        },
+        "latency_ms": 54,
+        "started_at": "2026-09-24T17:13:21.057353Z"
+      }
+    ],
+    "final": {
+      "outcome": "reject",
+      "reasons": [
+        "Eligibility rule(s) failed: R02.",
+        "The decision agent found that the policy does not cover this loss."
+      ],
+      "covered": false,
+      "agent_confidence": "0.950",
+      "retrieval_confidence": "0.779",
+      "confidence": "0.779",
+      "risk_score": 0,
+      "hard_blocks": [
+        "R02"
+      ],
+      "triggered_rules": [
+        "R02"
+      ],
+      "summary": "The policy was lapsed on 2026-06-28 and therefore not in force on the surgery date, and the required 24\u2011month continuous\u2011coverage waiting period for arthroscopic knee surgery was not met. Consequently, the claim is not covered.",
+      "citations": [
+        {
+          "evidence_id": "E6",
+          "document": "Health_Policy.pdf",
+          "page": 4,
+          "section": "5.2 Specific illnesses and procedures",
+          "quote": "The following conditions and procedures are covered only after 24 months of continuous coverage, whatever their cause, unless they arise from an accident: ... arthroscopic knee surgery and ligament repair.",
+          "label": "Health_Policy.pdf p.4"
+        },
+        {
+          "evidence_id": "E9",
+          "document": "Health_Policy.pdf",
+          "page": 4,
+          "section": "5.4 Effect of renewal and lapse on waiting periods",
+          "quote": "If the policy lapses and a new policy is issued later, all waiting periods start again from the beginning of the new policy.",
+          "label": "Health_Policy.pdf p.4"
+        }
+      ],
+      "escalation_flags": [],
+      "requires_human_review": true,
+      "disclaimer": "AI-assisted recommendation for a human reviewer. It is not an automated determination; a person makes the final decision."
+    }
+  }
+}
