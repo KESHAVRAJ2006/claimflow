@@ -25,12 +25,28 @@ def settings(**values: object) -> Settings:
         ("postgres://u:p@h:5432/d", "postgresql+asyncpg://u:p@h:5432/d"),
         ("postgresql://u:p@h/d", "postgresql+asyncpg://u:p@h/d"),
         ("postgresql://u:p@h/d?sslmode=require", "postgresql+asyncpg://u:p@h/d?ssl=require"),
+        # Neon's connection string, exactly as its dashboard shows it.
+        ("postgresql://u:p@h/d?sslmode=require&channel_binding=require", "postgresql+asyncpg://u:p@h/d?ssl=require"),
         ("postgresql+asyncpg://u:p@h/d", "postgresql+asyncpg://u:p@h/d"),
         ("postgresql+psycopg2://u:p@h/d", "postgresql+psycopg2://u:p@h/d"),
     ],
 )
 def test_to_asyncpg_url(given: str, expected: str) -> None:
     assert to_asyncpg_url(given) == expected
+
+
+def test_neon_url_works_as_pasted_for_both_logins(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TOOLS_DATABASE_URL", raising=False)
+    neon = "postgresql://owner:pw@ep-x-123.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    loaded = settings(database_url=neon, agent_db_user="claimflow_agent", agent_db_password="averylongpassword123")
+    host = "ep-x-123.ap-southeast-1.aws.neon.tech/neondb?ssl=require"
+    assert loaded.database_url.get_secret_value() == f"postgresql+asyncpg://owner:pw@{host}"
+    # The read-only login reaches the same host over TLS too.
+    assert loaded.tools_database_url is not None
+    assert (
+        loaded.tools_database_url.get_secret_value()
+        == f"postgresql+asyncpg://claimflow_agent:averylongpassword123@{host}"
+    )
 
 
 def test_render_style_url_is_accepted(monkeypatch: pytest.MonkeyPatch) -> None:

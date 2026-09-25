@@ -1,12 +1,108 @@
 # Deploying ClaimFlow
 
-This guide takes ClaimFlow from this repository to a running deployment on Render, with notifications through n8n.
+There are two ways to deploy ClaimFlow:
+- **[Free deployment](#free-deployment)** costs nothing. The services sleep when idle.
+- **[Render Blueprint](#paid-deployment-render-blueprint)** is paid and always on. Everything except Qdrant runs
+  on Render.
+
 For local development, `docker compose up -d` is all you need (see the README).
 
 > ClaimFlow's recommendations are AI-assisted and require human review. A deployment is a demonstration system
 > with synthetic data; do not load real customer data into it.
 
-## What runs where
+## Free deployment
+
+The API needs about 600 MB of memory before it serves a request: torch plus the embedding model, measured on the
+production image. Render's free instances have 512 MB, so the free route runs the API on Hugging Face, which gives
+free Docker Spaces 16 GB.
+
+```
+Browser ──HTTPS + Basic auth──▶ Render free web service (console)
+                                   │  adds X-API-Key server-side
+                                   ▼  HTTPS
+                                Hugging Face Space (API, Docker, 2 vCPU / 16 GB)
+                                   ├──▶ Neon free Postgres
+                                   ├──▶ Qdrant Cloud free cluster
+                                   └──▶ Groq / Gemini
+```
+
+Put Neon and Qdrant in **US East (N. Virginia)**, next to Hugging Face's servers. Each triage makes dozens of
+database and search calls, so the distance adds up.
+
+Free services sleep when idle:
+- The console wakes 30–60 s after 15 minutes idle.
+- The API needs a minute or two after 48 hours idle.
+- Neon wakes in about a second.
+
+Open the site a minute before a demo.
+
+### 1. Database: Neon
+
+1. At https://neon.tech, create a project: Postgres 16, region **AWS US East (N. Virginia)**.
+2. Under **Connect**, turn **Connection pooling off**. ClaimFlow creates its own read-only login and uses prepared
+   statements, and both need a direct connection.
+3. Copy the connection string. Paste it as it is; the API adapts `sslmode` and `channel_binding` for its driver.
+
+### 2. Vectors: Qdrant Cloud
+
+Create a free cluster in **N. Virginia**. Copy its URL (add `:6333` if it is missing) and create an API key.
+
+### 3. API: Hugging Face Space
+
+1. Create a free account at https://huggingface.co.
+2. Create a token with **Write** access at https://huggingface.co/settings/tokens.
+3. On your machine, from the repository root:
+
+   ```bash
+   pip install --upgrade huggingface_hub
+   hf auth login                                                   # paste the token when asked
+   python deploy/huggingface_space.py <your-username>/claimflow-api
+   ```
+
+   The script creates the Space if needed. It uploads what git has committed under `backend/`, so commit first.
+   It prints the Space's URL.
+4. In the Space, open **Settings → Variables and secrets** and add these secrets. Generate each random value with
+   `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+
+   | Secret | Value |
+   |---|---|
+   | `DATABASE_URL` | the Neon connection string |
+   | `AGENT_DB_USER` | `claimflow_agent` |
+   | `AGENT_DB_PASSWORD` | a random value |
+   | `QDRANT_URL` / `QDRANT_API_KEY` | from Qdrant Cloud |
+   | `GROQ_API_KEY` / `GOOGLE_API_KEY` | at least one |
+   | `API_KEY` | a random value; the console needs the same one |
+   | `CORS_ORIGINS` | `[]` |
+   | `SEED_DEMO_DATA` | `true` |
+   | `MAX_CONCURRENT_RUNS` | `2` |
+
+5. The Space restarts with the secrets. Its **Logs** tab shows the same startup sequence described for Render
+   [below](#deploy-on-render), ending in `startup complete`. Check `https://<space-url>/api/health`.
+
+To deploy a new version, commit and run the script again.
+
+### 4. Console: Render free web service
+
+1. In Render, choose **New → Web Service** and pick the GitHub repository.
+2. Set **Language** to Docker, **Root Directory** to `frontend`, **Instance type** to Free, and **Region** to
+   Virginia.
+3. Under **Advanced**, set the **Health check path** to `/healthz`.
+4. Add these environment variables:
+
+   | Variable | Value |
+   |---|---|
+   | `BACKEND_URL` | the Space URL, e.g. `https://username-claimflow-api.hf.space` |
+   | `API_KEY` | the same value as the Space's `API_KEY` |
+   | `CONSOLE_USER` | `reviewer` |
+   | `CONSOLE_PASSWORD` | a random value; this is what you sign in with |
+
+5. Deploy, open the `.onrender.com` URL, and sign in.
+
+## Paid deployment: Render Blueprint
+
+Always-on hosting, with everything except Qdrant on Render. The notification, environment and troubleshooting sections after it apply to both routes.
+
+### What runs where
 
 ```
 Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Render web service, 0.5c-512mb
@@ -25,7 +121,7 @@ Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Rende
   than more instances.
 - **The database accepts no outside connections** (`ipAllowList: []`).
 
-## Before you start
+### Before you start
 
 1. **Accounts:** a GitHub account with this repository pushed to it, and a Render account.
 2. **Qdrant Cloud:**
@@ -36,7 +132,7 @@ Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Rende
    - Groq: https://console.groq.com/keys
    - Google AI Studio: https://aistudio.google.com/apikey
 
-## Deploy on Render
+### Deploy on Render
 
 1. In Render, choose **New → Blueprint**, select the repository, and confirm `render.yaml`.
 2. Render asks for the values marked `sync: false`:
@@ -62,7 +158,7 @@ Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Rende
    2. Pick a *Submitted* claim.
    3. Click **Run triage**.
 
-### What `render.yaml` sets up for you
+#### What `render.yaml` sets up for you
 
 - **`DATABASE_URL`** comes from the database as `postgres://…`. The API rewrites it for the asyncpg driver.
 - **The agents' read-only login** is built from three values: `AGENT_DB_USER`, `AGENT_DB_PASSWORD` (generated),
@@ -76,7 +172,7 @@ Browser ──HTTPS + Basic auth──▶ claimflow-web (Next.js)          Rende
 - **`CONSOLE_PASSWORD`** is generated, which turns on HTTP Basic auth for the whole console. `/healthz` is exempt
   so Render's health check works.
 
-### If the database user may not create roles
+#### If the database user may not create roles
 
 Render's default database user can create roles, so the step above works there. On a provider where it cannot:
 

@@ -11,13 +11,17 @@ from sqlalchemy.engine import make_url
 
 # Schemes managed Postgres providers hand out (Render: postgres://, most others: postgresql://).
 _PLAIN_POSTGRES_SCHEMES = ("postgres://", "postgresql://")
+# libpq options asyncpg has no parameter for; passed through, they crash connect() with "unexpected keyword".
+# Neon's connection strings carry channel_binding=require; asyncpg still authenticates with SCRAM over TLS.
+_LIBPQ_ONLY_OPTIONS = ("channel_binding", "gssencmode")
 
 
 def to_asyncpg_url(url: str) -> str:
     """Rewrite a plain Postgres URL to use the asyncpg driver.
 
     Render (and Heroku-style providers) give ``postgres://user:pw@host/db``. SQLAlchemy needs the driver in the
-    scheme, and asyncpg spells the TLS option ``ssl`` where libpq URLs say ``sslmode``.
+    scheme, and asyncpg spells the TLS option ``ssl`` where libpq URLs say ``sslmode``. Options only libpq
+    understands, such as Neon's ``channel_binding``, are dropped.
 
     Args:
         url: A database URL.
@@ -29,7 +33,7 @@ def to_asyncpg_url(url: str) -> str:
     if not url.startswith(_PLAIN_POSTGRES_SCHEMES):
         return url
     parsed = make_url("postgresql+asyncpg://" + url.split("://", 1)[1])
-    query = dict(parsed.query)
+    query = {key: value for key, value in parsed.query.items() if key not in _LIBPQ_ONLY_OPTIONS}
     if "sslmode" in query:
         query["ssl"] = query.pop("sslmode")
     return parsed.set(query=query).render_as_string(hide_password=False)

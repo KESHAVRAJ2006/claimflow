@@ -148,7 +148,7 @@ Discord webhook URL ending in `/slack`. To turn it on:
 - set `N8N_WEBHOOK_URL`, `WEBHOOK_SECRET` and `NOTIFY_WEBHOOK_URL` in `.env`;
 - add `COMPOSE_PROFILES=notifications`, so `docker compose up -d` starts n8n too.
 
-`render.yaml` deploys the API, the console (behind HTTP Basic auth) and Postgres to Render. Both are described in
+Deployment has a **free** route (API on a Hugging Face Docker Space, console on Render's free tier, Neon Postgres, Qdrant Cloud) and a paid one (`render.yaml` deploys the API, the console behind HTTP Basic auth, and Postgres to Render). Both are described in
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), along with every environment variable.
 
 ### What happens on every backend start
